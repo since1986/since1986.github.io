@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" href="/lib/fancybox/source/jquery.fancybox.css">
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.1.2">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.1.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.1.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.1.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.1.2" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.1.2',
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: true,
+    fancybox: true,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="前段时间，在做一个小的工程时，遇到了需要通过反射获得方法真实参数名的场景，在这里我遇到了一些小小的问题，后来在部门老大的指导下，我解决了这个问题。通过解决这个问题，附带着我了解到了很多新的知识，我觉得有必要和大家分享交流一下。 咱们先来看这样一个小的demo：   这是一个很简单的小demo，里面就是一个简简单单的类Test1，Test1有一个包含两个参数的方法test，在Test1的main方法">
+<meta name="keywords" content="反射">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何通过反射获得方法的真实参数名（以及扩展研究）">
+<meta property="og:url" content="https://since1986.github.io/afedab58.html">
+<meta property="og:site_name" content="Since1986">
+<meta property="og:description" content="前段时间，在做一个小的工程时，遇到了需要通过反射获得方法真实参数名的场景，在这里我遇到了一些小小的问题，后来在部门老大的指导下，我解决了这个问题。通过解决这个问题，附带着我了解到了很多新的知识，我觉得有必要和大家分享交流一下。 咱们先来看这样一个小的demo：   这是一个很简单的小demo，里面就是一个简简单单的类Test1，Test1有一个包含两个参数的方法test，在Test1的main方法">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://since1986.github.io/afedab58/74a304fa0e96c53f4f50ce4549699d4d.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/3d1b1d8cb73ce07ee64c7724c718c2d4.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/f907f5c52ebed040756d74d04bd57868.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/7492dda8519a54c00d1fccb538fd7ef7.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/efaf1ce939b1a5bef0365fe4b6c7d0c5.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/54f4d695a467c15cbe3a6eae486cc724.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/69e09e78f8bd271b7f676a189b72b8b0.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/03c75ee626e118460b66f0eecefd9b19.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/582eec878e75dfc7cc822e507ac78398.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/485c020a5d9155c4866b818d959ca5c6.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/f943269f2b6376cbf07f2fddf51aa162.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/3d513c9e7af483d08fc7c02a287023b1.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/2a9075edef087dc94a55be832bdf9c8c.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/52f82b66f194c375e4a1c740a3905954.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/928e780afbf639c1c28820dc58db0f92.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/caffc98b2d586dcd8127fd69456469fe.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/4e7f04be032a6c35241d0a93ca24b291.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/9e1ce7e115d0fb780cc56ce1bef61516.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/d1cd8210e8cc95474bb9b71c0cd79a90.png">
+<meta property="og:image" content="https://since1986.github.io/afedab58/e9b96f14127c5f2e6636f8bafc8947e9.png">
+<meta property="og:updated_time" content="2019-06-06T09:47:41.284Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="如何通过反射获得方法的真实参数名（以及扩展研究）">
+<meta name="twitter:description" content="前段时间，在做一个小的工程时，遇到了需要通过反射获得方法真实参数名的场景，在这里我遇到了一些小小的问题，后来在部门老大的指导下，我解决了这个问题。通过解决这个问题，附带着我了解到了很多新的知识，我觉得有必要和大家分享交流一下。 咱们先来看这样一个小的demo：   这是一个很简单的小demo，里面就是一个简简单单的类Test1，Test1有一个包含两个参数的方法test，在Test1的main方法">
+<meta name="twitter:image" content="https://since1986.github.io/afedab58/74a304fa0e96c53f4f50ce4549699d4d.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="https://since1986.github.io/afedab58">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>如何通过反射获得方法的真实参数名（以及扩展研究） | Since1986</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Since1986</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+
+  
+
+  <a href="https://github.com/since1986" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewbox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a>
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://since1986.github.io/afedab58.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="since1986">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar215x215.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Since1986">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">如何通过反射获得方法的真实参数名（以及扩展研究）
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-11-07 15:06:56" itemprop="dateCreated datePublished" datetime="2017-11-07T15:06:56+08:00">2017-11-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-06 17:47:41" itemprop="dateModified" datetime="2019-06-06T17:47:41+08:00">2019-06-06</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">5.2k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">5 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>前段时间，在做一个小的工程时，遇到了需要通过反射获得方法真实参数名的场景，在这里我遇到了一些小小的问题，后来在部门老大的指导下，我解决了这个问题。通过解决这个问题，附带着我了解到了很多新的知识，我觉得有必要和大家分享交流一下。</p>
+<p>咱们先来看这样一个小的demo：</p>
+<img src="/afedab58/74a304fa0e96c53f4f50ce4549699d4d.png">
+
+<p>这是一个很简单的小demo，里面就是一个简简单单的类<code>Test1</code>，<code>Test1</code>有一个包含两个参数的方法<code>test</code>，在<code>Test1</code>的<code>main</code>方法中通过射来获得<code>test</code>方法的所有参数的名字，并将其输出到标准流。我本以为这个demo的运行结果会得到方法的参数名，结果：</p>
+<img src="/afedab58/3d1b1d8cb73ce07ee64c7724c718c2d4.png">
+
+<p>惊不惊喜，意不意外？和说好的不一样啊！</p>
+<p>咱们先停一下，先把为什么反射没有拿到正确的值放到一边，先说说我为什么要研究“通过反射原理获得方法参数的实际名称”这件事呢：是因为我想仿照并实现Spring MVC中的“自动绑定”功能。大家知道Spring MVC里有一个“自动绑定”的功能，能够自动绑定请求参数的值到<code>@RequestMapping</code>方法的参数上的，而不用任何额外的操作。</p>
+<img src="/afedab58/f907f5c52ebed040756d74d04bd57868.png">
+
+<p>这个功能我觉得很方便，所以我想尝试自己仿造这个功能，然后用在公司的项目开发中。我猜测Spring是通过反射获得方法的参数名后根据参数名到<code>request</code>中<code>getParam(String name)</code>来获得实际的值然后绑定的。因此我就尝试着按照这个思路做，结果就遇到了上边提到的反射获得不了参数实际名称的问题。我将这个问题请教了老大，老大了解到我的意图后，经过验证，得出结论：Spring MVC能不能正常使用自动绑定是与java编译器编译时加不加<code>-g</code>参数有关的，而这个<code>-g</code>参数是代表着java编译器在编译时是否会输出调试信息。</p>
+<img src="/afedab58/7492dda8519a54c00d1fccb538fd7ef7.png">
+<p>其实也就是说：Spring是通过读取java编译器生成的调试信息从而获得的方法中参数的真实名称的。说到这里，这个问题基本也解决了，但是我还是想再多说一点我后续的学习结果。后续我研究了一下Spring对于方法参数这块的处理逻辑，也就是对于“自动绑定”功能的底层的实现。</p>
+<p>那么，Spring 到底是用了什么“黑科技”来做到获得方法实际参数名的呢，咱们不妨就看Spring的源码吧，看看Spring到底是如何实现的。</p>
+<p>Spring海量的源代码，从何看起呢，这里，我是这样解决的：我大体知道这个获得方法实际参数名的操作应当和<code>Method</code>的<code>getParameters()</code>方法有关，或者说它的方法里或许会调用到这个方法，那么好了，我们可以使用<code>idea</code>提供的“查看调用栈”的功能，来顺藤摸瓜，看看在Spring中有没有调用到这个方法，如果有，那么解决方案应当就在调用方法的附近。</p>
+<img src="/afedab58/efaf1ce939b1a5bef0365fe4b6c7d0c5.png">
+
+<p>我们可以看到，果不其然，在调用栈里就有<code>org.spring</code>包中的方法，其中有两个方法都是<code>StandardReflectionParameterNameDiscoverer</code>类的方法，其实我们已经找到了，看这个类的名字就能知道，它是处理<code>ParameterName</code>的Discoverer的（在这里我想再说点题外话，我个人非常赞同Spring这种全命名的编码风格，看到命名就能看明白这个类是在干什么，所以说代码应当是能“自描述”的）</p>
+<img src="/afedab58/54f4d695a467c15cbe3a6eae486cc724.png">
+
+
+<img src="/afedab58/69e09e78f8bd271b7f676a189b72b8b0.png">
+
+<p>好，我们再回到代码中来，继续看这个类：发现它有一段简要的注释：</p>
+<img src="/afedab58/03c75ee626e118460b66f0eecefd9b19.png">
+
+<p>大意就是这个类是针对使用了JDK8基于<code>-parameters</code>编译参数的<code>ParameterNameDiscoverer</code>的实现，这里这个<code>-parameters</code>参数是怎么回事咱们先放一边，继续向上看<code>StandardReflectionParameterNameDiscoverer</code>所实现的这个接口<code>ParameterNameDiscoverer</code>，打开<code>ParameterNameDiscoverer</code>这个接口，我们用idea的查看子类的功能，能够看到它一共有包括<code>StandardReflectionParameterNameDiscoverer</code>在内的<code>8</code>个子类</p>
+<img src="/afedab58/582eec878e75dfc7cc822e507ac78398.png">
+
+<p>其中有一个名字里带“Default”的子类<code>DefaultParameterNameDiscoverer</code>，按照一般套路来说，带Default的都是默认的实现，那么好了我们优先看它吧。</p>
+<img src="/afedab58/485c020a5d9155c4866b818d959ca5c6.png">
+
+<p>打开<code>DefaultParameterNameDiscoverer</code>，我们发现，他做的大体就是通过判断<code>standardReflectionAvailable</code>这个值来走向不同分支流程：一个是走向刚才提到的利用JDK8编译参数的<code>StandardReflectionParameterNameDiscoverer</code>另一个是走向了<code>LocalVariableTableParameterNameDiscoverer</code></p>
+<img src="/afedab58/f943269f2b6376cbf07f2fddf51aa162.png">
+
+<p>好，现在又出现了熟悉的<code>StandardReflectionParameterNameDiscoverer</code>了，那么我们返回去看吧，一会再看另一个分支的<code>LocalVariableTableParameterNameDiscoverer</code>。</p>
+<p>我们回到<code>StandardReflectionParameterNameDiscoverer</code>中，再来看刚才那个<code>-parameters</code>编译参数，这是个什么黑科技？既然他是个编译参数，那么咱们不妨试着用它编译一下咱们的代码试一下吧。</p>
+<img src="/afedab58/3d513c9e7af483d08fc7c02a287023b1.png">
+
+<p>我们将<code>idea</code>设置上<code>-parameters</code>编译参数从新运行刚才的demo，发现这回的输出结果是：</p>
+<img src="/afedab58/2a9075edef087dc94a55be832bdf9c8c.png">
+
+<p>已经能够拿到参数的真实名称了。那么，这个<code>-parameters</code>到底是什么呢：我们可以来看一下oracle官方提供的<a href="https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html#BHCGAJDC" target="_blank" rel="noopener">javac文档</a>：</p>
+<img src="/afedab58/52f82b66f194c375e4a1c740a3905954.png">
+
+<img src="/afedab58/928e780afbf639c1c28820dc58db0f92.png">
+
+
+<p>通过文档可以看出加上这个参数后，编译器会生成元数据，从而使方法参数的反射能够拿到参数的信息。<br>这个功能是jdk8的新特性，我们就不仔细展开了，详情可以查看这两篇文档：<br><a href="http://openjdk.java.net/projects/jdk8/features" target="_blank" rel="noopener">JDK 8 Features</a></p>
+<p><a href="http://openjdk.java.net/jeps/118" target="_blank" rel="noopener">JEP 118: Access to Parameter Names at Runtime</a></p>
+<p><code>-parameters</code>这个黑科技咱们已经了解了，利用这个编译参数是可以获得方法参数的真实名称的，但是这个参数是jdk8之后才有的，那么之前的版本如何获得呢？我们继续看Spring源代码吧。现在我们来看另一个分支：<code>LocalVariableTableParameterNameDiscoverer</code>，打开这个类：</p>
+<img src="/afedab58/caffc98b2d586dcd8127fd69456469fe.png">
+
+<p>其实看注释就明白了，这个<code>LocalVariableTableParameterNameDiscoverer</code>是通过<code>ASM library</code>分析<code>LocalVariableTable</code>来实现获得参数实际名称的，<code>ASM</code>是一个第三方的字节码操纵库，用这个库可以读取写入class文件，这个库有很广泛的应用，具体的我不展开介绍了。</p>
+<img src="/afedab58/4e7f04be032a6c35241d0a93ca24b291.png">
+
+<p>我们重点说一下这个<code>LocalVariableTable</code>吧，这个<code>LocalVariableTable</code>是什么呢？我们不用文字来说明了，直接来看代码吧：<br>我们这次不看源文件了，来直接看编译后的class文件。用<code>idea</code>打开<code>Test1.class</code>：</p>
+<img src="/afedab58/9e1ce7e115d0fb780cc56ce1bef61516.png">
+
+<p>然后在<code>View</code>菜单中点选<code>Show Bytecode</code>：</p>
+<img src="/afedab58/d1cd8210e8cc95474bb9b71c0cd79a90.png">
+
+<p>在弹出窗口中，我们可以看到，<code>idea</code>以大纲的方式把<code>class</code>文件的信息列了出来，而在其中就有<code>LocalVariableTable</code>存在，而且在“LocalVariableTable”附近我们可以看到我们定义方法的参数的真实名称。现在我们也就明白了，对于8以下的jdk编译环境，Spring是使用ASM来读取<code>class</code>文件中<code>LocalVariableTable</code>信息从而获得参数真实名称的。<br>到此为止，我们已经基本了解了Spring中自动绑定背后的黑科技了。</p>
+<p>这里我还想继续再多说一点，有关<code>LocalVariableTable</code>和Java <code>class</code>文件：<code>class</code>文件可以说是Java实现跨平台特性的根本！不管在什么平台下，只要编译出来的<code>class</code>文件符合规范，虚拟机就能够正常的执行。了解一下<code>class</code>文件的相关知识其实对于理解各类<code>class</code>文件操纵库以及基于<code>class</code>操纵的<code>AOP</code>等等编程模式的原理是很有帮助的，所以我们可以了解一下<code>class</code>文件是什么样的结构的。想要了解<code>class</code>文件的结构，最权威的莫过于官方的《Java虚拟机规范了》，在Java虚拟机规范中，第四章是有关<code>class</code>文件结构的内容，我们可以大致过一遍。<br>通过阅读，我们可以大致了解到<code>class</code>的结构：</p>
+<blockquote>
+<p>A class file consists of a stream of 8-bit bytes. All 16-bit, 32-bit, and 64-bit<br>quantities are constructed by reading in two, four, and eight consecutive 8-bit<br>bytes, respectively. Multibyte data items are always stored in big-endian order,<br>where the high bytes come first. In the Java SE platform, this format is supported<br>by interfaces java.io.DataInput and java.io.DataOutput and classes such as<br>java.io.DataInputStream and java.io.DataOutputStream.</p>
+</blockquote>
+<p>class文件可以用一个结构来表示：</p>
+<img src="/afedab58/e9b96f14127c5f2e6636f8bafc8947e9.png">
+
+<p>这个结构中每一项大致的含义我们来简单说明一下吧（详情请查看虚拟机规范）：</p>
+<p>开头的<code>magic</code> <code>u4</code>叫做“魔数”，Java虚拟器通过读取这个数来判断当前文件是不是有效的<code>u4</code>代表它是<code>无符号</code>的<code>4</code>个<code>byte</code>，这个数始终应该是<code>0xCAFEBABE</code>；</p>
+<p><code>minor_version</code>、<code>major_version</code>分别是<code>class</code>文件的<code>次版本</code>和<code>主版本</code>；</p>
+<p><code>u2</code> <code>constant_pool_count</code> 、<code>cp_info</code> <code>constant_pool[constant_pool_count-1]</code>代表常量池中项目数和代表了常量池本身；</p>
+<p><code>u2</code> <code>access_flags</code> : 代表<code>class</code>访问标记，例如：public protected；</p>
+<p><code>u2</code> <code>this_class</code> : 代表放置类名在常量池中的索引；</p>
+<p><code>u2</code> <code>super_class</code> : 代表父类名称在常量池中的索引；</p>
+<p><code>u2</code> <code>interfaces_count</code>; <code>u2</code> <code>interfaces[interfaces_count]</code>; 代表所实现的接口集合的大小，及接口集合本身；</p>
+<p><code>u2</code> <code>fields_count</code>; <code>field_info</code> <code>fields[fields_count]</code>; 代表属性集合大小以及属性集合本身；</p>
+<p><code>u2</code> <code>methods_count</code>; <code>method_info</code> <code>methods[methods_count]</code>; 代表方法集合大小以及方法集合本身；</p>
+<p><code>u2</code> <code>attributes_count</code>; <code>attribute_info</code> <code>attributes[attributes_count]</code>; java <code>class</code>文件内部属性信息集合大小和内部属性信息集合本身。这里提一下，我们前面的提到的<code>LocalVariableTable</code>的信息就存储在这里。</p>
+<p>到了这里我们大致回顾一下吧，我们从尝试解决反射获得方法参数真实名称开始，了解了Java编译参数、Spring自动绑定相关处理原理、jdk8编译参数新特性、以及Java <code>class</code>文件的结构。通过这个过程，我们看到，就一个“自动绑定”这个平常都感觉不到它存在的小功能背后，还有这莫多深层次的技术在里面，由此可见，Spring之所以如此强大而且易用，离不开各类底层技术的支持，这就让我想起以前看到过的一位技术博主的标语：“只有深入，方能浅出”，想想确实是这个道理。</p>
+<hr>
+<p>注：<br>在研究过程中我参考以下几位的文章，在此表示感谢：</p>
+<p><a href="http://www.cnblogs.com/guangshan/p/4660564.html" target="_blank" rel="noopener">反射获取一个方法中的参数名（不是类型）</a></p>
+<p><a href="http://nullwy.me/2017/05/java-method-parameter/" target="_blank" rel="noopener">Java 运行时获取方法参数名</a></p>
+<p><a href="http://www.cnblogs.com/aigongsi/archive/2012/04/15/2450190.html" target="_blank" rel="noopener">java Class文件内部结构解析</a></p>
+<p><a href="http://blog.csdn.net/a153375250/article/details/50839285" target="_blank" rel="noopener">深入理解JVM : class文件结构之常量池(1)</a></p>
+<p><a href="http://blog.csdn.net/a153375250/article/details/50839317" target="_blank" rel="noopener">深入理解JVM : class文件结构之类信息描述、字段表、方法表(2)</a></p>
+<p><a href="http://www.cnblogs.com/iyangyuan/p/4631696.html" target="_blank" rel="noopener">触摸java常量池</a></p>
+<p><a href="http://www.php.cn/java-article-357252.html" target="_blank" rel="noopener">实现一个Java Class解析器的实力代码分享</a></p>
+<p><a href="https://en.wikipedia.org/wiki/Java_class_file" target="_blank" rel="noopener">Java class file</a></p>
+<p><a href="http://viralpatel.net/blogs/tutorial-java-class-file-format-revealed/" target="_blank" rel="noopener">Tutorial: Java Class file format, revealed…</a></p>
+<p><a href="https://www.murrayc.com/permalink/1998/03/13/the-java-class-file-format/" target="_blank" rel="noopener">The Java Class File Format</a></p>
+<p><a href="https://www.javaworld.com/article/2077193/core-java/the-java-class-file-lifestyle.html" target="_blank" rel="noopener">The Java class file lifestyle An introduction to the basic structure and lifestyle of the Java class file</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+      <div>
+        
+
+
+
+
+  
+
+
+
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>since1986</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    
+    <a href="https://since1986.github.io/afedab58.html" title="如何通过反射获得方法的真实参数名（以及扩展研究）">https://since1986.github.io/afedab58.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/反射/" rel="tag"># 反射</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/c45b5759.html" rel="next" title="多次字符串相加一定要用StringBuilder而不用 + 吗？">
+                <i class="fa fa-chevron-left"></i> 多次字符串相加一定要用StringBuilder而不用 + 吗？
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/6d6043cc.html" rel="prev" title="从今天的新员工培训中学到的技术之外的技能">
+                从今天的新员工培训中学到的技术之外的技能 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar215x215.png" alt="since1986">
+            
+              <p class="site-author-name" itemprop="name">since1986</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">138</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">98</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/since1986" title="GitHub &rarr; https://github.com/since1986" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:385741668@qq.com" title="E-Mail &rarr; mailto:385741668@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://twitter.com/_since1986_" title="Twitter &rarr; https://twitter.com/_since1986_" rel="noopener" target="_blank"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.linkedin.com/in/fan-zhang-since1986" title="Linkedin &rarr; https://www.linkedin.com/in/fan-zhang-since1986" rel="noopener" target="_blank"><i class="fa fa-fw fa-linkedin"></i>Linkedin</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://since1986.github.io/" title="https://since1986.github.io/">我的主站</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://since1986.coding.me/" title="https://since1986.coding.me/" rel="noopener" target="_blank">我的高速镜像站</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.720ui.com/" title="http://blog.720ui.com/" rel="noopener" target="_blank">梁桂钊的博客</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://chenyongjun.vip/" title="http://chenyongjun.vip/" rel="noopener" target="_blank">码代码的陈同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://qixiaobo.site/" title="https://qixiaobo.site/" rel="noopener" target="_blank">后端之路</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2011 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">since1986</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">站点总字数：</span>
+    
+    <span title="站点总字数">314k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    
+    <span title="站点阅读时长">4:46</span>
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.1.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script src="/js/utils.js?v=7.1.2"></script>
+
+  <script src="/js/motion.js?v=7.1.2"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.1.2"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.1.2"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.1.2"></script>
+<script src="/js/post-details.js?v=7.1.2"></script>
+
+
+
+  
+
+
+  <script src="/js/next-boot.js?v=7.1.2"></script>
+
+
+  
+  <script src="/js/js.cookie.js?v=7.1.2"></script>
+  <script src="/js/scroll-cookie.js?v=7.1.2"></script>
+
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

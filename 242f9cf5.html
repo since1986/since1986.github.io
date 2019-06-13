@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" href="/lib/fancybox/source/jquery.fancybox.css">
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.1.2">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.1.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.1.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.1.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.1.2" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.1.2',
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: true,
+    fancybox: true,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="前言此文原是「研习小组」中的一篇主题，当时我在这个主题上花了一番精力，有一些收获，在这里记录一下，备忘。 正文这段时间我看了陈同学的一篇文章，里面提到了 ThreadLocal ，它的源码我以前没看过，所以就借着这个机会看了一下，我发现了在 ThreadLocal 里的 ThreadLocalMap 当中，使用了一种被称之为 斐波那契散列 (存疑)的哈希函数，他的大致过程是：  每次用 0x61c">
+<meta name="keywords" content="算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ThreadLocal的hash算法（关于 0x61c88647）">
+<meta property="og:url" content="https://since1986.github.io/242f9cf5.html">
+<meta property="og:site_name" content="Since1986">
+<meta property="og:description" content="前言此文原是「研习小组」中的一篇主题，当时我在这个主题上花了一番精力，有一些收获，在这里记录一下，备忘。 正文这段时间我看了陈同学的一篇文章，里面提到了 ThreadLocal ，它的源码我以前没看过，所以就借着这个机会看了一下，我发现了在 ThreadLocal 里的 ThreadLocalMap 当中，使用了一种被称之为 斐波那契散列 (存疑)的哈希函数，他的大致过程是：  每次用 0x61c">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://since1986.github.io/242f9cf5/1.png">
+<meta property="og:image" content="https://since1986.github.io/242f9cf5/2.png">
+<meta property="og:image" content="https://since1986.github.io/242f9cf5/3.png">
+<meta property="og:image" content="https://since1986.github.io/242f9cf5/4.png">
+<meta property="og:image" content="https://since1986.github.io/242f9cf5/5.png">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2019/gif/145633/1547284932844-da6c331a-3ca0-4d50-aeca-4ef87b9118ea.gif#align=left&display=inline&height=13&originHeight=13&originWidth=51&size=0&width=51">
+<meta property="og:image" content="https://cdn.nlark.com/yuque/0/2019/gif/145633/1547284932628-88920f31-8300-40e6-9d53-cc4970dd9657.gif#align=left&display=inline&height=27&originHeight=27&originWidth=114&size=0&width=114">
+<meta property="og:image" content="https://since1986.github.io/242f9cf5/6.png">
+<meta property="og:updated_time" content="2019-06-06T09:47:41.141Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ThreadLocal的hash算法（关于 0x61c88647）">
+<meta name="twitter:description" content="前言此文原是「研习小组」中的一篇主题，当时我在这个主题上花了一番精力，有一些收获，在这里记录一下，备忘。 正文这段时间我看了陈同学的一篇文章，里面提到了 ThreadLocal ，它的源码我以前没看过，所以就借着这个机会看了一下，我发现了在 ThreadLocal 里的 ThreadLocalMap 当中，使用了一种被称之为 斐波那契散列 (存疑)的哈希函数，他的大致过程是：  每次用 0x61c">
+<meta name="twitter:image" content="https://since1986.github.io/242f9cf5/1.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="https://since1986.github.io/242f9cf5">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>ThreadLocal的hash算法（关于 0x61c88647） | Since1986</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Since1986</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+
+  
+
+  <a href="https://github.com/since1986" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewbox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a>
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://since1986.github.io/242f9cf5.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="since1986">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar215x215.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Since1986">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ThreadLocal的hash算法（关于 0x61c88647）
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-18 14:05:02" itemprop="dateCreated datePublished" datetime="2019-04-18T14:05:02+08:00">2019-04-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-06 17:47:41" itemprop="dateModified" datetime="2019-06-06T17:47:41+08:00">2019-06-06</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">12k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">11 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>此文原是「研习小组」中的<a href="https://www.yuque.com/server_mind/answer/201901#e1553606" target="_blank" rel="noopener">一篇主题</a>，当时我在这个主题上花了一番精力，有一些收获，在这里记录一下，备忘。</p>
+<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>这段时间我看了陈同学的一篇<a href="https://mp.weixin.qq.com/s/i-k3U5uZBoePQmRb-tSW5A" target="_blank" rel="noopener">文章</a>，里面提到了 ThreadLocal ，它的源码我以前没看过，所以就借着这个机会看了一下，我发现了在 ThreadLocal 里的 ThreadLocalMap 当中，使用了一种被称之为 <code>斐波那契散列</code> (存疑)的哈希函数，他的大致过程是：</p>
+<ul>
+<li><p>每次用 0x61c88647 这个数累加。（这里对应哈希函数的一般操作步骤的<a href="#45dc08d5">第一步</a> ）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这个数可以这样计算出来 ~(2^32 / 1.618) + 0b1 (这里 ^ 代表求幂操作)</span></span><br><span class="line">BigDecimal goldenRatioResult = BigDecimal.valueOf(Math.pow(<span class="number">2</span>, <span class="number">32</span>)).divide(<span class="keyword">new</span> BigDecimal(<span class="string">"1.618"</span>), <span class="number">0</span>, ROUND_HALF_UP);</span><br><span class="line"><span class="keyword">int</span> hashIncrenment = ~goldenRatioResult.intValue() + <span class="number">0b1</span>; <span class="comment">// 等效于 Math.abs() 结果是 1640531527 也就是十六进制的 0x61c88647</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>得到的结果按位和 ThreadLocalMap 的容量-1 做 &amp; 操作。（这里实际上对应了哈希函数的一般操作步骤的<a href="#45dc08d5">第二步</a>，也就是将第一步计算的值和哈希表的容量做取模操作。另外，这里ThreadLocalMap 的容量必须为2的幂，之所以有这样的规定，是因为，当求解 x % y 时，如果y = 2^n 那么取模操作可以转换为按位与操作 x &amp; (y - 1)，效率会比取模操作高，取模操作可以看作是除操作，而除操作是性能比较低的）  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The difference between successively generated hash codes - turns</span></span><br><span class="line"><span class="comment"> * implicit sequential thread-local IDs into near-optimally spread</span></span><br><span class="line"><span class="comment"> * multiplicative hash values for power-of-two-sized tables.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> HASH_INCREMENT = <span class="number">0x61c88647</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Returns the next hash code.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">nextHashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> nextHashCode.getAndAdd(HASH_INCREMENT);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>  其中需要注意的是1.618这个数又叫 黄金分割 (黄金分割也可以是0.618，0.618和1.618互为倒数，也就是1/1.618 = 0.618)，而这个黄金分割又是可以由斐波那契数列推导出来的：</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">Fibonacci numbers: F(n) = F(n-1) + F(n-2) with F(0) = 0 and F(1) = 1. </span><br><span class="line">  </span><br><span class="line">n		a(n)</span><br><span class="line">0		0</span><br><span class="line">1		1</span><br><span class="line">2		1</span><br><span class="line">3		2</span><br><span class="line">4		3</span><br><span class="line">5		5</span><br><span class="line">6		8</span><br><span class="line">7		13</span><br><span class="line">8		21</span><br><span class="line">9		34</span><br><span class="line">10		55</span><br><span class="line">11		89</span><br><span class="line">12		144</span><br><span class="line">13		233</span><br><span class="line">14		377</span><br><span class="line">15		610</span><br><span class="line">16		987</span><br><span class="line">17		1597</span><br><span class="line">18		2584</span><br><span class="line">19		4181</span><br><span class="line">20		6765</span><br><span class="line">21		10946</span><br><span class="line">22		17711</span><br><span class="line">23		28657</span><br><span class="line">24		46368</span><br><span class="line">25		75025</span><br><span class="line">26		121393</span><br><span class="line">27		196418</span><br><span class="line">28		317811</span><br><span class="line">29		514229</span><br><span class="line">30		832040</span><br><span class="line">31		1346269</span><br><span class="line">32		2178309</span><br><span class="line">33		3524578</span><br><span class="line">34		5702887</span><br><span class="line">35		9227465</span><br><span class="line">36		14930352</span><br><span class="line">37		24157817</span><br><span class="line">38		39088169</span><br><span class="line">39		63245986</span><br><span class="line">40		102334155</span><br><span class="line"></span><br><span class="line">102334155 / 63245986 = 1.61803</span><br><span class="line">从上边观察，对于考后的 n ，a(n+1) / a(n) 约等于 1.618</span><br></pre></td></tr></table></figure>
+
+<p>「<a href="https://en.wikipedia.org/wiki/Golden_ratio" target="_blank" rel="noopener">Golden ratio</a>」<br>「<a href="https://en.wikipedia.org/wiki/Fibonacci_number#cite_note-4" target="_blank" rel="noopener">Fibonacci number</a>」</p>
+<p><strong>那么问题就来了：</strong></p>
+<ul>
+<li>为什么一定要用黄金分割来累加？我看到有个视频说用黄金分割可以让hash值分散(存疑)，但是我有一个疑问，<a href="#3ea6b18b">用别的一个什么数</a>，不照样可以让 hash 分开吗？</li>
+<li>另外 ThreadLocalMap 的 hash 最后还需要用按位与的方式用掩码消除高位，那么为什么消除高位后仍能保持得到hash值的分散呢。<a href="#5e0d40ba">(存疑，有可能压根不是仍然保持分散)</a></li>
+</ul>
+<hr>
+<h3 id="概念与理论"><a href="#概念与理论" class="headerlink" title="概念与理论"></a>概念与理论</h3><h4 id="哈希函数的一般分类"><a href="#哈希函数的一般分类" class="headerlink" title="哈希函数的一般分类"></a>哈希函数的一般分类</h4><blockquote>
+<p>Division Based Hash Functions                h(x) = x % M<br>Bit-Shifting Hash Functions Using the Middle Square Method<br>Multiplicative Hash Functions</p>
+</blockquote>
+<p>斐波那契哈希属于Multiplicative Hash Functions中的一种实现</p>
+<blockquote>
+<p>In the multiplicative method, the multiplier A must be carefully chosen to scatter the numbers in −1 the table. A very good choice for the constant A is φ W , where φ, known as the golden ratio , is the positive root of the polynomial<br>x 2 − x − 1<br>This is because x is a solution to the polynomial if and only if<br>x 2 − x − 1=0 iff x 2 − x =1<br>iff x − 1<br>1 = x<br>In other words, a solution x has the property that its inverse is x − 1. The solution, φ, is called the golden ratio because it arises in nature in an astonishing number of places and because the ancient Greeks used this ratio in the design of many of their buildings, considering it a divine −1 2 proportion . Thus, φ and φ = φ − 1 are both roots of x x1. φ is also the value to which th −1 f n /f n−1 converges as n → ∞, where f n is the n Fibonacci number. Since φ = φ − 1, it is approximately 0.6180339887498948482045868343656. (Well approximately depends on your notion<br>of approximation, doesn’t it?)<br>−1 When we let A = φ W<br>as the multiplicative constant, the multiplicative method is called Fibonacci hashing . The constant has many remarkable and astonishing mathematical properties, but the property that makes it a good factor in the above hash function is the following fact.<br>−1 −1 −1 First observe that the sequence of values φ , 2φ , 3φ , … lies entirely in the interval (0, 1). Remember that the curly braces mean, the fractional part of, so for example, 2φ −1 ≈  −1  −1</p>
+<p>1.236067977 and<br>≈ 0.236067977.<br>2φ<br>The rst value, two segments whose lengths are in the golden ratio.</p>
+</blockquote>
+<h4 id="哈希函数的一般步骤"><a href="#哈希函数的一般步骤" class="headerlink" title="哈希函数的一般步骤"></a>哈希函数的一般步骤</h4><blockquote>
+<p>Main article: <a href="https://en.wikipedia.org/wiki/Hash_function" target="_blank" rel="noopener">Hash function</a><br>The idea of hashing is to distribute the entries (key/value pairs) across an array of <em>buckets_index</em> that suggests where the entry can be found:<br>index = f(key, array_size)&gt; Often this is done in two steps:<br>hash = hashfunc(key)<br>index = hash % array_size&gt; In this method, the <em>hash_reduced</em> to an index (a number between <code>0</code> and <code>array_size − 1</code>) using the <a href="https://en.wikipedia.org/wiki/Modulo_operation" target="_blank" rel="noopener">modulo operator</a> (<code>%</code>).<br>In the case that the array size is a <a href="https://en.wikipedia.org/wiki/Power_of_two" target="_blank" rel="noopener">power of two</a>, the remainder operation is reduced to <a href="https://en.wikipedia.org/wiki/Mask_(computing)" target="_blank" rel="noopener">masking</a>, which improves speed, but can increase problems with a poor hash function.<a href="https://en.wikipedia.org/wiki/Hash_table#cite_note-5" target="_blank" rel="noopener">[5]</a></p>
+</blockquote>
+<p>「<a href="https://en.wikipedia.org/wiki/Hash_table" target="_blank" rel="noopener">Hash table</a>」</p>
+<blockquote>
+<p>Modulo operations might be implemented such that a division with a remainder is calculated each time. For special cases, on some hardware, faster alternatives exist. For example, the modulo of powers of 2 can alternatively be expressed as a <a href="https://en.wikipedia.org/wiki/Bitwise_operation" target="_blank" rel="noopener">bitwise</a> AND operation:<br><code>x % 2 == x &amp; (2 - 1)</code><br>Examples (assuming <em>x</em> is a positive integer):<br><code>x % 2 == x &amp; 1``x % 4 == x &amp; 3``x % 8 == x &amp; 7</code><br>In devices and software that implement bitwise operations more efficiently than modulo, these alternative forms can result in faster calculations.<a href="https://en.wikipedia.org/wiki/Modulo_operation#cite_note-11" target="_blank" rel="noopener">[11]</a><br><a href="https://en.wikipedia.org/wiki/Compiler_optimization" target="_blank" rel="noopener">Optimizing</a> <a href="https://en.wikipedia.org/wiki/Compiler" target="_blank" rel="noopener">compilers</a> may recognize expressions of the form <code>expression % constant</code> where <code>constant</code> is a power of two and automatically implement them as <code>expression &amp; (constant-1)</code>. This can allow writing clearer code without compromising performance. This optimization is not possible for languages in which the result of the modulo operation has the sign of the dividend (including C), unless the dividend is of an <a href="https://en.wikipedia.org/wiki/Signedness" target="_blank" rel="noopener">unsigned</a> integer type. This is because, if the dividend is negative, the modulo will be negative, whereas <code>expression &amp; (constant-1)</code> will always be positive.</p>
+</blockquote>
+<p>「<a href="https://en.wikipedia.org/wiki/Modulo_operation" target="_blank" rel="noopener">Modulo operation</a>」</p>
+<h4 id="怎样是好的哈希函数"><a href="#怎样是好的哈希函数" class="headerlink" title="怎样是好的哈希函数"></a>怎样是好的哈希函数</h4><blockquote>
+<p>Properties of a Good Hash Function<br>hash<br>To means to chop up or make a mess of things, liked hashed potatoes. A hash function is supposed to chop up its argument and reconstruct a value out of the chopped up little pieces. Good hash functions<br>• make the original value intractably hard to reconstruct from the computed hash value,<br>• are easy to compute (for speed), and<br>• randomly disperse keys evenly throughout the table, making sure that no two keys map to the same index.</p>
+</blockquote>
+<blockquote>
+<p>Choosing a hash function<br>A good hash function and implementation algorithm are essential for good hash table performance, but may be difficult to achieve.<em><a href="https://en.wikipedia.org/wiki/Wikipedia:Citation_needed" target="_blank" rel="noopener">citation needed</a></em><a href="https://en.wikipedia.org/wiki/Hash_table#cite_note-6" target="_blank" rel="noopener">[6]</a><br>A basic requirement is that the function should provide a <a href="https://en.wikipedia.org/wiki/Uniform_distribution_(discrete)" target="_blank" rel="noopener">uniform distribution</a> of hash values. A non-uniform distribution increases the number of collisions and the cost of resolving them. Uniformity is sometimes difficult to ensure by design, but may be evaluated empirically using statistical tests, e.g., a <a href="https://en.wikipedia.org/wiki/Pearson%27s_chi-squared_test#Discrete_uniform_distribution" target="_blank" rel="noopener">Pearson’s chi-squared test</a> for discrete uniform distributions.<a href="https://en.wikipedia.org/wiki/Hash_table#cite_note-chernoff-7" target="_blank" rel="noopener">[7]</a><a href="https://en.wikipedia.org/wiki/Hash_table#cite_note-plackett-8" target="_blank" rel="noopener">[8]</a><br>The distribution needs to be uniform only for table sizes that occur in the application. In particular, if one uses dynamic resizing with exact doubling and halving of the table size, then the hash function needs to be uniform only when the size is a <a href="https://en.wikipedia.org/wiki/Power_of_two" target="_blank" rel="noopener">power of two</a>. Here the index can be computed as some range of bits of the hash function. On the other hand, some hashing algorithms prefer to have the size be a <a href="https://en.wikipedia.org/wiki/Prime_number" target="_blank" rel="noopener">prime number</a>.<a href="https://en.wikipedia.org/wiki/Hash_table#cite_note-:0-9" target="_blank" rel="noopener">[9]</a> The modulus operation may provide some additional mixing; this is especially useful with a poor hash function.<br>For <a href="https://en.wikipedia.org/wiki/Open_addressing" target="_blank" rel="noopener">open addressing</a> schemes, the hash function should also avoid <em>clustering</em>, the mapping of two or more keys to consecutive slots. Such clustering may cause the lookup cost to skyrocket, even if the load factor is low and collisions are infrequent. The popular multiplicative hash<a href="https://en.wikipedia.org/wiki/Hash_table#cite_note-knuth-3" target="_blank" rel="noopener">[3]</a> is claimed to have particularly poor clustering behavior.<a href="https://en.wikipedia.org/wiki/Hash_table#cite_note-:0-9" target="_blank" rel="noopener">[9]</a></p>
+</blockquote>
+<p>好的哈希函数应该能做到“discrete uniform distributions”，也就是“离散均匀分布”，而斐波那契哈希是可以做到很好的“离散均匀分布”的，取一个别的值不一定能做到（也并不一定做不到），这个可以通过一个实验观察到。下图为我写的一个DEMO，红色虚线框中是斐波那契散列，其他的为其他数做的对比：（在 0 - 1 内的分布）</p>
+<img src="/242f9cf5/1.png">
+
+<img src="/242f9cf5/2.png">
+
+<p>以下为 ThreadLocalMap 自身的 hash 函数的分布情况：（可以看出来，当值为 1.618 时，是“离散均匀分布”的，其他值，也能做到一定的离散均匀分布，但是有的值就做不到）(存疑)</p>
+<img src="/242f9cf5/3.png">
+
+<img src="/242f9cf5/4.png">
+
+<img src="/242f9cf5/5.png">
+
+<blockquote>
+<p>Re: Golden Ratio &amp; Hash Tables<br><br>Posted: Nov 2, 2002 2:58 AM    <br><br>Click to see the message monospaced in plain text    Plain Text         Click to reply to this topic    Reply<br>“Alexei A. Frounze” <a href>alexfru@chat.ru</a> wrote in message news:<a href>apop0i$3ib1k$2@ID-57378.news.dfncis.de</a>…</p>
+<blockquote>
+<p>Can anybody enlighten me why golden ratio is so widely used when doing hash<br><br>tables? Is it the only possible and effective value? I’ve not found anything<br><br>about this particular choice in the Sedgewick’s book, just the fact that<br><br>it’s used. Any simple explanation?<br>I believe Knuth has explanation, but I don’t have the book handy and don’t<br><br>know when I’ll be able to read it. Can you explain why (sqrt(5)-1)/2, but<br><br>not let’s say (sqrt(3)-1)/2? Does this really have anything to do with<br><br>Fibonacci numbers, packing of seeds and thelike?<br>TIA</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<p>The usual explanation is that it provides the best dispersion of<br><br>consecutive keys in a multiplicative hash table: that was Knuth’s<br><br>reason for advocating it.<br>For a hash table of size 2^N, an index for each key K can be<br><br>constructed by multiplying K * M, where M is a prime number close to<br><br>2^N * R, R being the inverse golden ratio (sqrt(5)-1)/2. Keep the N<br><br>most significant bits as the hash index. Knuth’s finding was that the<br><br>dispersion of indexes for a sequence of consecutive keys is maximized<br><br>when M is chosen this way, thus a multiplicative hash table with a<br><br>dense set of keys will have the fewest possible collisions when M<br><br>approx= 2^N * R.<br>–<br><br>Chris Green</p>
+</blockquote>
+<p>「<a href="http://mathforum.org/kb/message.jspa?messageID=431065" target="_blank" rel="noopener">Topic: Golden Ratio &amp; Hash Tables</a>」</p>
+<h4 id="x-mod-2-k-is-not-a-desirable-function-because-it-does-not-depend-on-all-the-bits-in-the-binary-representation-of-x"><a href="#x-mod-2-k-is-not-a-desirable-function-because-it-does-not-depend-on-all-the-bits-in-the-binary-representation-of-x" class="headerlink" title="x mod 2^k is not a desirable function because it does not depend on all the bits in the binary representation of x."></a>x mod 2^k is not a desirable function because it does not depend on all the bits in the binary representation of <em>x</em><a href="#2">.</a></h4><blockquote>
+<p>Similarly, it is often tempting to let <em>M</em> be a power of two. E.g., <img src="https://cdn.nlark.com/yuque/0/2019/gif/145633/1547284932844-da6c331a-3ca0-4d50-aeca-4ef87b9118ea.gif#align=left&display=inline&height=13&originHeight=13&originWidth=51&size=0&width=51" alt> for some integer <em>k&gt;_1. In this case, the hash function <img src="https://cdn.nlark.com/yuque/0/2019/gif/145633/1547284932628-88920f31-8300-40e6-9d53-cc4970dd9657.gif#align=left&display=inline&height=27&originHeight=27&originWidth=114&size=0&width=114" alt> simply extracts the bottom _k</em> bits of the binary representation of <em>x</em>. While this hash function is quite easy to compute, it is not a desirable function because it does not depend on all the bits in the binary representation of <em>x</em>.</p>
+</blockquote>
+<p>「<a href="https://book.huihoo.com/data-structures-and-algorithms-with-object-oriented-design-patterns-in-c++/html/page211.html#SECTION009210000000000000000" target="_blank" rel="noopener">Division Method</a>」 </p>
+<h4 id="哈希表的冲突处理"><a href="#哈希表的冲突处理" class="headerlink" title="哈希表的冲突处理"></a>哈希表的冲突处理</h4><blockquote>
+<p>• separate chaining<br>• open addressing</p>
+</blockquote>
+<blockquote>
+<p>Open Addressing<br>In open addressing, there are no separate lists attached to the table. All values are in the table itself. When a collision occurs, the cells of the hash table itself are searched until an empty one is found. Which cells are searched depends upon the specic method of open addressing. All variations can be described generically by a sequence of functions<br>h 0 (x) h 1 (x)<br>h k (x)<br>= = … =<br>h(x) + f(0, x) % M h(x) + f(1, x) % M<br>h(x) + f(k, x) % M<br>th<br>where h i (x) is the i<br>location tested and f(i, x) is a function that returns some integer value based on the values of i and x. The idea is that the hash function h(x) is rst used to nd a location in the hash table for x. If we are trying to insert x into the table, and the index h(x) is empty, we insert it there. Otherwise we need to search for another place in the table into which we can store x. The function f(i, x), called the collision resolution function , serves that purpose. We search the locations<br>h(x) + f(0, x) % M h(x) + f(1, x) % M h(x) + f(2, x) % M … h(x) + f(k, x)% M<br>until either an empty cell is found or the search returns to a cell previously visited in the sequence. The function f(i, x) need not depend on both i and x. Soon, we will look at a few dierent collision resolution functions.<br>To search for an item, the same collision resolution function is used. The hash function is applied to nd the rst index. If the key is there, the search stops. Otherwise, the table is searched until either the item is found or an empty cell is reached. If an empty cell is reached, it implies that the item is not in the table. This raises a question about how to delete items. If an item is deleted, then there will be no way to tell whether the search should stop when it reaches an empty cell, or just jump over the hole. The way around this problem is to lazy deletion . In lazy deletion, the cell is marked DELETED. Only when it is needed again is it re-used. Every cell is marked as either<br>ACTIVE: it has an item in it<br>EMPTY: it has no item in it<br>DELETED: it had an item that was deleted  it can be re-used<br>These three constants are supposed to be dened for any hash table implementation in the ANSI standard.<br>There are several dierent methods of collision resolution using open addressing: linear probing , quadratic probing , double hashing , and hopscotch hashing .</p>
+</blockquote>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><img src="/242f9cf5/6.png">
+
+<p>「<a href="https://www.yuque.com/server_mind/answer/yhmpcd/edit" target="_blank" rel="noopener">Java中Integer越界的处理</a>」“2的32次方除以1.618这个数，得出来一个结果，每次用这个结果累加”，这个累加操作很快就会造成整数越界</p>
+<p>「<a href="https://since1986.github.io/blog/f89c2671.html">关于’二补码’(Two’s Complement)</a>」<a href="https://www.yuque.com/server_mind/answer/yhmpcd/edit#1" target="_blank" rel="noopener">负数转正数或者正数转负数的操作都是用的 </a><a href="https://www.yuque.com/server_mind/answer/yhmpcd/edit" target="_blank" rel="noopener"><code>二补码</code></a><a href="https://www.yuque.com/server_mind/answer/yhmpcd/edit" target="_blank" rel="noopener"> 这个操作，这个操作内容就是：</a><a href="https://www.yuque.com/server_mind/answer/yhmpcd/edit" target="_blank" rel="noopener"><code>按位取反 + 二进制1</code></a></p>
+<p>「<a href="https://book.huihoo.com/data-structures-and-algorithms-with-object-oriented-design-patterns-in-c++/html/page214.html" target="_blank" rel="noopener">Fibonacci Hashing</a>」</p>
+<p>「<a href="https://www.gohired.in/2018/07/31/fibonacci-hashing-fastest-hashtable/" target="_blank" rel="noopener">Fibonacci Hashing &amp; Fastest Hashtable</a>」</p>
+<p>「<a href="https://book.huihoo.com/data-structures-and-algorithms-with-object-oriented-design-patterns-in-c++/html/page203.html" target="_blank" rel="noopener">Hashing, Hash Tables and Scatter Tables</a>」</p>
+<p>「<a href="https://probablydance.com/2018/06/16/fibonacci-hashing-the-optimization-that-the-world-forgot-or-a-better-alternative-to-integer-modulo/" target="_blank" rel="noopener">Fibonacci Hashing: The Optimization that the World Forgot (or: a Better Alternative to Integer Modulo)</a>」这篇是最推荐的，同时还有关于这篇的评论 「<a href="https://news.ycombinator.com/item?id=17328756" target="_blank" rel="noopener">Hacker News</a>」</p>
+<p>「<a href="https://mjtsai.com/blog/2018/06/26/fibonacci-hashing/" target="_blank" rel="noopener">Fibonacci Hashing</a>」</p>
+<p>「<a href="http://benjaminwhx.com/2017/12/26/%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A80x61c88647/" target="_blank" rel="noopener">为什么使用0x61c88647</a>」</p>
+<p>「<a href="https://www.javaspecialists.eu/archive/Issue164.html" target="_blank" rel="noopener">Why 0x61c88647?</a>」</p>
+<p>「<a href="https://www.cnblogs.com/yangecnu/p/Introduce-Hashtable.html" target="_blank" rel="noopener">浅谈算法和数据结构: 十一 哈希表</a>」</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+      <div>
+        
+
+
+
+
+  
+
+
+
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>since1986</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    
+    <a href="https://since1986.github.io/242f9cf5.html" title="ThreadLocal的hash算法（关于 0x61c88647）">https://since1986.github.io/242f9cf5.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/算法/" rel="tag"># 算法</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/c821db80.html" rel="next" title="注意自动拆箱可能引起空指针">
+                <i class="fa fa-chevron-left"></i> 注意自动拆箱可能引起空指针
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/ae32ecc0.html" rel="prev" title="Windows环境下开启log4j2彩色日志输出">
+                Windows环境下开启log4j2彩色日志输出 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar215x215.png" alt="since1986">
+            
+              <p class="site-author-name" itemprop="name">since1986</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">138</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">98</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/since1986" title="GitHub &rarr; https://github.com/since1986" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:385741668@qq.com" title="E-Mail &rarr; mailto:385741668@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://twitter.com/_since1986_" title="Twitter &rarr; https://twitter.com/_since1986_" rel="noopener" target="_blank"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.linkedin.com/in/fan-zhang-since1986" title="Linkedin &rarr; https://www.linkedin.com/in/fan-zhang-since1986" rel="noopener" target="_blank"><i class="fa fa-fw fa-linkedin"></i>Linkedin</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://since1986.github.io/" title="https://since1986.github.io/">我的主站</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://since1986.coding.me/" title="https://since1986.coding.me/" rel="noopener" target="_blank">我的高速镜像站</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.720ui.com/" title="http://blog.720ui.com/" rel="noopener" target="_blank">梁桂钊的博客</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://chenyongjun.vip/" title="http://chenyongjun.vip/" rel="noopener" target="_blank">码代码的陈同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://qixiaobo.site/" title="https://qixiaobo.site/" rel="noopener" target="_blank">后端之路</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概念与理论"><span class="nav-number">2.1.</span> <span class="nav-text">概念与理论</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#哈希函数的一般分类"><span class="nav-number">2.1.1.</span> <span class="nav-text">哈希函数的一般分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#哈希函数的一般步骤"><span class="nav-number">2.1.2.</span> <span class="nav-text">哈希函数的一般步骤</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#怎样是好的哈希函数"><span class="nav-number">2.1.3.</span> <span class="nav-text">怎样是好的哈希函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#x-mod-2-k-is-not-a-desirable-function-because-it-does-not-depend-on-all-the-bits-in-the-binary-representation-of-x"><span class="nav-number">2.1.4.</span> <span class="nav-text">x mod 2^k is not a desirable function because it does not depend on all the bits in the binary representation of x.</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#哈希表的冲突处理"><span class="nav-number">2.1.5.</span> <span class="nav-text">哈希表的冲突处理</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2011 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">since1986</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">站点总字数：</span>
+    
+    <span title="站点总字数">314k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    
+    <span title="站点阅读时长">4:46</span>
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.1.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script src="/js/utils.js?v=7.1.2"></script>
+
+  <script src="/js/motion.js?v=7.1.2"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.1.2"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.1.2"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.1.2"></script>
+<script src="/js/post-details.js?v=7.1.2"></script>
+
+
+
+  
+
+
+  <script src="/js/next-boot.js?v=7.1.2"></script>
+
+
+  
+  <script src="/js/js.cookie.js?v=7.1.2"></script>
+  <script src="/js/scroll-cookie.js?v=7.1.2"></script>
+
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
