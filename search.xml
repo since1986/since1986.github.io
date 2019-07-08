@@ -341,7 +341,7 @@
   <entry>
     <title><![CDATA[工作中常用的Linux命令汇总]]></title>
     <url>%2Ffaa8f5e3.html</url>
-    <content type="text"><![CDATA[日常工作中，需要用到不少命令，在这里记录一下，以强化记忆。 查看系统当前登录用户信息1234567wwhowhoamilast 查看终端命令执行历史1history 压缩123tar –czf desc.tar.gz *.srczip -r desc.zip ./src/* 解压123tar -xzvf file.tar.gzunzip -d /desc src.zip 软链接123ln -s file linkrm -r link 移动文件1mv src desc/src 文件传输12345scp /local/file/path user@remote_host:/remote/save/pathscp user@remote_host:/file/path /local/file/pathrz 字符串操作12#获得文件名（去掉路径）basename /file/path/file_name #输出 file_name 文件操作12345#查看文件行数cat xxx.x | wc -l#ll命令显示人类可读的文件大小ll -h]]></content>
+    <content type="text"><![CDATA[日常工作中，需要用到不少命令，在这里记录一下，以强化记忆。 查看系统当前登录用户信息1234567wwhowhoamilast 查看终端命令执行历史1history 压缩123tar –czf desc.tar.gz *.srczip -r desc.zip ./src/* 解压123tar -xzvf file.tar.gzunzip -d /desc src.zip 软链接123ln -s file linkrm -r link 移动文件1mv src desc/src 文件传输12345scp /local/file/path user@remote_host:/remote/save/pathscp user@remote_host:/file/path /local/file/pathrz 字符串操作12#获得文件名（去掉路径）basename /file/path/file_name #输出 file_name 文件操作12345#查看文件行数cat xxx.x | wc -l#ll命令显示人类可读的文件大小ll -h 环境查看12345#查看所有环境变量env#查看所有变量set]]></content>
       <tags>
         <tag>Linux</tag>
       </tags>
