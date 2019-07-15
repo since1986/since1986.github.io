@@ -102,15 +102,17 @@
 
   <meta name="description" content="前言这里记录一些笔记 正文等待通知机制123456789101112131415161718192021222324252627282930313233343536373839// JVM 实现public class Test2 &amp;#123;    private static final Object LOCK = new Object(); // 注意当作锁的对象一定要是final的，加入不">
 <meta property="og:type" content="website">
-<meta property="og:title" content="links">
+<meta property="og:title" content="notes">
 <meta property="og:url" content="https://since1986.github.io/notes/index.html">
 <meta property="og:site_name" content="Since1986">
 <meta property="og:description" content="前言这里记录一些笔记 正文等待通知机制123456789101112131415161718192021222324252627282930313233343536373839// JVM 实现public class Test2 &amp;#123;    private static final Object LOCK = new Object(); // 注意当作锁的对象一定要是final的，加入不">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-07-15T13:06:53.578Z">
+<meta property="og:image" content="https://since1986.github.io/notes/index/1.png">
+<meta property="og:updated_time" content="2019-07-15T13:19:56.251Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="links">
+<meta name="twitter:title" content="notes">
 <meta name="twitter:description" content="前言这里记录一些笔记 正文等待通知机制123456789101112131415161718192021222324252627282930313233343536373839// JVM 实现public class Test2 &amp;#123;    private static final Object LOCK = new Object(); // 注意当作锁的对象一定要是final的，加入不">
+<meta name="twitter:image" content="https://since1986.github.io/notes/index/1.png">
 
 
 
@@ -128,7 +130,7 @@
   };
 </script>
 
-  <title>links | Since1986</title>
+  <title>notes | Since1986</title>
   
 
 
@@ -393,7 +395,7 @@
     <div class="post-block page">
       <header class="post-header">
 
-<h1 class="post-title" itemprop="name headline">links
+<h1 class="post-title" itemprop="name headline">notes
 
 </h1>
 
@@ -425,7 +427,7 @@
 
 <p>时，可以不严谨的理解为实际上执行者也就是<code>main</code>线程隐式调用了<code>thread0.wait()</code> 和 <code>thread1.wait()</code> 这时<code>main</code>线程就等待了，然后在<code>thread0</code>线程执行结束后，会隐式调用<code>thread0.notifyAll()</code>，在<code>thread1</code>线程执行结束后，会隐式调用<code>thread1.notifyAll()</code>，这样在等待的<code>main</code>线程就被唤醒了。</p>
 <p>一张及不严谨的图，大概描述个意思：</p>
-
+<p><img src="/notes/index/1.png" alt="图一"></p>
 
         
       </div>
