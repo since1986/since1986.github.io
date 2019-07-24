@@ -100,18 +100,18 @@
 
 
 
-  <meta name="description" content="前言偶然在一次单元测试中写了一个非常长的字符串字面量。 正文在一次单元测试中，我写了一个很长的字符串字面量，大概10万个字符左右，编译时，编译器给出了异常告警 java: constant string too long，当时惊呆了，惊讶于平常写的字符串字面量竟然还有长度限制？？？（黑人问号）。然后我来了兴致，我倒要看看字符串字面量到底能写到多少个字符不报错。于是我试了大概10分钟左右，发现 65">
+  <meta name="description" content="前言偶然在一次单元测试中写了一个非常长的字符串字面量。 正文在一次单元测试中，我写了一个很长的字符串字面量，大概10万个字符左右，编译时，编译器给出了异常告警 java: constant string too long，当时我就惊呆了，惊讶于平常写的字符串字面量竟然还有长度限制？？？（黑人问号）。然后我来了兴致，我倒要看看字符串字面量到底能写到多少个字符不报错。于是我试了大概10分钟左右，发现">
 <meta name="keywords" content="JDK">
 <meta property="og:type" content="article">
 <meta property="og:title" content="字符串字面量长度是有限制的">
 <meta property="og:url" content="https://since1986.github.io/d91c2205.html">
 <meta property="og:site_name" content="Since1986">
-<meta property="og:description" content="前言偶然在一次单元测试中写了一个非常长的字符串字面量。 正文在一次单元测试中，我写了一个很长的字符串字面量，大概10万个字符左右，编译时，编译器给出了异常告警 java: constant string too long，当时惊呆了，惊讶于平常写的字符串字面量竟然还有长度限制？？？（黑人问号）。然后我来了兴致，我倒要看看字符串字面量到底能写到多少个字符不报错。于是我试了大概10分钟左右，发现 65">
+<meta property="og:description" content="前言偶然在一次单元测试中写了一个非常长的字符串字面量。 正文在一次单元测试中，我写了一个很长的字符串字面量，大概10万个字符左右，编译时，编译器给出了异常告警 java: constant string too long，当时我就惊呆了，惊讶于平常写的字符串字面量竟然还有长度限制？？？（黑人问号）。然后我来了兴致，我倒要看看字符串字面量到底能写到多少个字符不报错。于是我试了大概10分钟左右，发现">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-07-24T04:01:05.626Z">
+<meta property="og:updated_time" content="2019-07-24T04:05:12.726Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="字符串字面量长度是有限制的">
-<meta name="twitter:description" content="前言偶然在一次单元测试中写了一个非常长的字符串字面量。 正文在一次单元测试中，我写了一个很长的字符串字面量，大概10万个字符左右，编译时，编译器给出了异常告警 java: constant string too long，当时惊呆了，惊讶于平常写的字符串字面量竟然还有长度限制？？？（黑人问号）。然后我来了兴致，我倒要看看字符串字面量到底能写到多少个字符不报错。于是我试了大概10分钟左右，发现 65">
+<meta name="twitter:description" content="前言偶然在一次单元测试中写了一个非常长的字符串字面量。 正文在一次单元测试中，我写了一个很长的字符串字面量，大概10万个字符左右，编译时，编译器给出了异常告警 java: constant string too long，当时我就惊呆了，惊讶于平常写的字符串字面量竟然还有长度限制？？？（黑人问号）。然后我来了兴致，我倒要看看字符串字面量到底能写到多少个字符不报错。于是我试了大概10分钟左右，发现">
 
 
 
@@ -424,7 +424,7 @@
                 
               
 
-              <time title="创建时间：2019-07-24 10:22:09 / 修改时间：12:01:05" itemprop="dateCreated datePublished" datetime="2019-07-24T10:22:09+08:00">2019-07-24</time>
+              <time title="创建时间：2019-07-24 10:22:09 / 修改时间：12:05:12" itemprop="dateCreated datePublished" datetime="2019-07-24T10:22:09+08:00">2019-07-24</time>
             
 
             
@@ -492,7 +492,7 @@
 
       
         <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>偶然在一次单元测试中写了一个非常长的字符串字面量。</p>
-<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>在一次单元测试中，我写了一个很长的字符串字面量，大概10万个字符左右，编译时，编译器给出了异常告警 <code>java: constant string too long</code>，当时惊呆了，惊讶于平常写的字符串字面量竟然还有长度限制？？？（黑人问号）。然后我来了兴致，我倒要看看字符串字面量到底能写到多少个字符不报错。于是我试了大概10分钟左右，发现 <code>65534</code> 这个值是上限，超过了就会报 <code>java: constant string too long</code>。</p>
+<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>在一次单元测试中，我写了一个很长的字符串字面量，大概10万个字符左右，编译时，编译器给出了异常告警 <code>java: constant string too long</code>，当时我就惊呆了，惊讶于平常写的字符串字面量竟然还有长度限制？？？（黑人问号）。然后我来了兴致，我倒要看看字符串字面量到底能写到多少个字符不报错。于是我试了大概10分钟左右，发现 <code>65534</code> 这个值是上限，超过了就会报 <code>java: constant string too long</code>。</p>
 <p>那么，这个限制在JDK中是在什么地方实现的呢，我Google了一下，发现了这几篇文章：<a href="https://netbeans.org/bugzilla/show_bug.cgi?id=212752" target="_blank" rel="noopener">Bug 212752 - Error when there is string bigged than 65534 bytes</a>、<a href="http://www.blogjava.net/killme2008/archive/2016/06/17/251368.html" target="_blank" rel="noopener">Java字符串的最大长度</a>、<a href="https://stackoverflow.com/questions/2738574/java-constant-string-too-long-compile-error-only-happens-using-ant-not-when" target="_blank" rel="noopener">Java “constant string too long” compile error. Only happens using Ant, not when using Eclipse</a></p>
 <p>我们先来看第一篇文章，在这篇文章中（实际上是个NetBeans的issues主题）有个人提到：</p>
 <blockquote>
