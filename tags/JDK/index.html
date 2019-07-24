@@ -470,7 +470,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">141</span>
+                    <span class="site-state-item-count">142</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -826,7 +826,7 @@
     
       <span class="post-meta-item-text">站点总字数：</span>
     
-    <span title="站点总字数">315k</span>
+    <span title="站点总字数">384k</span>
   
 
   
@@ -837,7 +837,7 @@
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">4:46</span>
+    <span title="站点阅读时长">5:49</span>
   
 </div>
 
@@ -1320,7 +1320,23 @@
 
 </body>
 </html>
-  if ('auto' === 'auto') {
+esultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
             input.addEventListener('input', inputEventFunction);
           } else {
             $('.search-icon').click(inputEventFunction);
