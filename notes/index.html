@@ -110,7 +110,8 @@
 <meta property="og:image" content="https://since1986.github.io/notes/index/1-1.png">
 <meta property="og:image" content="https://since1986.github.io/notes/index/2-1.jpg">
 <meta property="og:image" content="https://since1986.github.io/notes/index/2-1.jpg">
-<meta property="og:updated_time" content="2019-07-25T13:03:08.844Z">
+<meta property="og:image" content="https://since1986.github.io/notes/index/7-1.png">
+<meta property="og:updated_time" content="2019-08-08T03:03:50.373Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="notes">
 <meta name="twitter:description" content="前言这里记录一些笔记 正文#1 等待通知机制123456789101112131415161718192021222324252627282930313233343536373839// JVM 实现public class Test2 &amp;#123;    private static final Object LOCK = new Object(); // 注意当作锁的对象一定要是final的，">
@@ -491,6 +492,9 @@
 
 <h3 id="6-JMM对64位数据类型有特殊规范"><a href="#6-JMM对64位数据类型有特殊规范" class="headerlink" title="#6 JMM对64位数据类型有特殊规范"></a>#6 JMM对64位数据类型有特殊规范</h3><p>第一点：JMM 规范定义了8种操作（逻辑上的定义）lock、unlock、read、load、use、assign、store、write ，并且有规定：“不允许read和load、store和write操作单一出现”，也就是 read必然伴随load 、store必然伴随write，也就是主内存中的变量同步至工作内存（read和load）这个操作是原子的，同时工作内存中的值同步到主内存这个操作（store和write）也是原子的 我不知道你问题里“原子的”是不是指的这个范畴</p>
 <p>第二：以上那两个操作，JMM的设计是：对于64为数据类型，不要求完全遵守，但是强烈建议遵守，商业虚拟机在实现上也一般听从了JMM的建议，将64位类型的那两种操作也实现成了原子的</p>
+<h3 id="7-new-都做了什么操作"><a href="#7-new-都做了什么操作" class="headerlink" title="#7 new 都做了什么操作"></a>#7 <code>new</code> 都做了什么操作</h3><p>一个 new 语句分为4步 第一步NEW是创建并默认初始化 然后放到栈顶 然后复制一份栈顶再放到栈顶 然后用栈顶传入 <init> 最后再哪栈顶放到局部变量</init></p>
+<p>参考 <a href="https://www.zhihu.com/question/52749416" target="_blank" rel="noopener">关于JVM字节码中dup指令的问题？</a></p>
+<p><img src="/notes/index/7-1.png" alt="图7-1"></p>
 
         
       </div>
@@ -868,6 +872,10 @@
                     <a href="https://qixiaobo.site/" title="https://qixiaobo.site/" rel="noopener" target="_blank">后端之路</a>
                   </li>
                 
+                  <li class="links-of-blogroll-item">
+                    <a href="https://xilidou.com/" title="https://xilidou.com/" rel="noopener" target="_blank">犀利豆的博客</a>
+                  </li>
+                
               </ul>
             </div>
           
@@ -891,7 +899,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-等待通知机制"><span class="nav-number">2.1.</span> <span class="nav-text">#1 等待通知机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-多态、虚方法表"><span class="nav-number">2.2.</span> <span class="nav-text">#2 多态、虚方法表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-类初始化锁"><span class="nav-number">2.3.</span> <span class="nav-text">#3 类初始化锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-记录一次JVM-old过高的排查"><span class="nav-number">2.4.</span> <span class="nav-text">#4 记录一次JVM old过高的排查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-实现一个小顶堆"><span class="nav-number">2.5.</span> <span class="nav-text">#5 实现一个小顶堆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-JMM对64位数据类型有特殊规范"><span class="nav-number">2.6.</span> <span class="nav-text">#6 JMM对64位数据类型有特殊规范</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-等待通知机制"><span class="nav-number">2.1.</span> <span class="nav-text">#1 等待通知机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-多态、虚方法表"><span class="nav-number">2.2.</span> <span class="nav-text">#2 多态、虚方法表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-类初始化锁"><span class="nav-number">2.3.</span> <span class="nav-text">#3 类初始化锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-记录一次JVM-old过高的排查"><span class="nav-number">2.4.</span> <span class="nav-text">#4 记录一次JVM old过高的排查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-实现一个小顶堆"><span class="nav-number">2.5.</span> <span class="nav-text">#5 实现一个小顶堆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-JMM对64位数据类型有特殊规范"><span class="nav-number">2.6.</span> <span class="nav-text">#6 JMM对64位数据类型有特殊规范</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-new-都做了什么操作"><span class="nav-number">2.7.</span> <span class="nav-text">#7 new 都做了什么操作</span></a></li></ol></li></ol></div>
             
 
           </div>
