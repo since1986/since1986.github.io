@@ -112,7 +112,7 @@
 <meta property="og:image" content="https://since1986.github.io/notes/index/2-1.jpg">
 <meta property="og:image" content="https://since1986.github.io/notes/index/7-1.png">
 <meta property="og:image" content="https://since1986.github.io/notes/index/9-1.png">
-<meta property="og:updated_time" content="2019-08-09T10:07:38.505Z">
+<meta property="og:updated_time" content="2019-08-09T10:14:20.413Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="notes">
 <meta name="twitter:description" content="前言这里记录一些笔记 正文#1 等待通知机制123456789101112131415161718192021222324252627282930313233343536373839// JVM 实现public class Test2 &amp;#123;    private static final Object LOCK = new Object(); // 注意当作锁的对象一定要是final的，">
@@ -497,7 +497,7 @@
 <p>参考 <a href="https://www.zhihu.com/question/52749416" target="_blank" rel="noopener">关于JVM字节码中dup指令的问题？</a></p>
 <p><img src="/notes/index/7-1.png" alt="图7-1"></p>
 <h3 id="8-随机数"><a href="#8-随机数" class="headerlink" title="#8 随机数"></a>#8 随机数</h3><p>Java的随机数生成的大致逻辑是：用户提供（或Random类内部自行生成）一个初始的数，然后通过一个公式（名字叫线性同余公式）把这个初始数作为输入给你算出另一个数，用这个过程模拟随机性，构造器里有值就是使用者给初识数，没值就是Random类自己给生成一个初识数（初始数叫做种子）</p>
-<h3 id="9-annotation-类型的切入点只在有接口方法声明的前提下生效，为什么"><a href="#9-annotation-类型的切入点只在有接口方法声明的前提下生效，为什么" class="headerlink" title="#9 @annotation 类型的切入点只在有接口方法声明的前提下生效，为什么"></a>#9 @annotation 类型的切入点只在有接口方法声明的前提下生效，为什么</h3><p>昨天那个问题我基本上已经串起来了，我灵机一动看了一下 idea 的调用栈视图（这个方法在整个流程的什么位置已经直观的在调用栈里显示出来了）</p>
+<h3 id="9-annotation-类型的切入点只在有接口方法声明的前提下生效，为什么"><a href="#9-annotation-类型的切入点只在有接口方法声明的前提下生效，为什么" class="headerlink" title="#9 @annotation 类型的切入点只在有接口方法声明的前提下生效，为什么"></a>#9 @annotation 类型的切入点只在有接口方法声明的前提下生效，为什么</h3><p>昨天那个问题我基本上已经串起来了，我灵机一动看了一下 idea 的调用栈视图（这个方法在整个流程的什么位置已经直观的在调用栈里显示出来了，很清晰，想知道流程就沿着调用栈倒推即可）</p>
 <p><img src="/notes/index/9-1.png" alt="图9-1"></p>
 <p>大致的是：</p>
 <ol>
@@ -520,10 +520,11 @@
 <li><p>然后调用 canApply （Can the given advisor apply at all on the given class?）</p>
 </li>
 <li><p>然后调用 org.springframework.aop.support.AopUtils#canApply(org.springframework.aop.Pointcut, java.lang.Class<?>, boolean)
-这个也就是昨天我加断点的方法，
-在这个方法里通过切入点定义 Pointcut 以及通过 ClassUtils.getAllInterfacesForClassAsSet(targetClass) 找到的切入目标类的接口（重点是*接口*）然后循环此接口的所有方法来判断是不是能被切入（具体调用 org.springframework.aop.aspectj.AspectJExpressionPointcut#matches(java.lang.reflect.Method, java.lang.Class<?>, boolean) 来判断）</p>
+这个也就是昨天我加断点的方法，在这个方法里通过切入点定义 Pointcut 以及通过 ClassUtils.getAllInterfacesForClassAsSet(targetClass) 找到的切入目标类的接口（重点是*接口*）然后循环此接口的所有方法来判断是不是能被切入（具体调用 org.springframework.aop.aspectj.AspectJExpressionPointcut#matches(java.lang.reflect.Method, java.lang.Class<?>, boolean) 来判断） 关键就在于是找的是接口而不是实现</p>
 </li>
 </ol>
+<p>切面（Aspect） = 切入点（Pointcut） + 通知（Advice）</p>
+<p><a href="https://www.cnblogs.com/leeSmall/p/10236553.html" target="_blank" rel="noopener">框架源码系列十：Spring AOP（AOP的核心概念回顾、Spring中AOP的用法、Spring AOP 源码学习）</a></p>
 
         
       </div>
