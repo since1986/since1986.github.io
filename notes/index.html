@@ -111,7 +111,8 @@
 <meta property="og:image" content="https://since1986.github.io/notes/index/2-1.jpg">
 <meta property="og:image" content="https://since1986.github.io/notes/index/2-1.jpg">
 <meta property="og:image" content="https://since1986.github.io/notes/index/7-1.png">
-<meta property="og:updated_time" content="2019-08-08T03:03:50.373Z">
+<meta property="og:image" content="https://since1986.github.io/notes/index/9-1.png">
+<meta property="og:updated_time" content="2019-08-09T10:07:38.505Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="notes">
 <meta name="twitter:description" content="前言这里记录一些笔记 正文#1 等待通知机制123456789101112131415161718192021222324252627282930313233343536373839// JVM 实现public class Test2 &amp;#123;    private static final Object LOCK = new Object(); // 注意当作锁的对象一定要是final的，">
@@ -495,6 +496,34 @@
 <h3 id="7-new-都做了什么操作"><a href="#7-new-都做了什么操作" class="headerlink" title="#7 new 都做了什么操作"></a>#7 <code>new</code> 都做了什么操作</h3><p>一个 new 语句分为4步 第一步NEW是创建并默认初始化 然后放到栈顶 然后复制一份栈顶再放到栈顶 然后用栈顶传入 <init> 最后再哪栈顶放到局部变量</init></p>
 <p>参考 <a href="https://www.zhihu.com/question/52749416" target="_blank" rel="noopener">关于JVM字节码中dup指令的问题？</a></p>
 <p><img src="/notes/index/7-1.png" alt="图7-1"></p>
+<h3 id="8-随机数"><a href="#8-随机数" class="headerlink" title="#8 随机数"></a>#8 随机数</h3><p>Java的随机数生成的大致逻辑是：用户提供（或Random类内部自行生成）一个初始的数，然后通过一个公式（名字叫线性同余公式）把这个初始数作为输入给你算出另一个数，用这个过程模拟随机性，构造器里有值就是使用者给初识数，没值就是Random类自己给生成一个初识数（初始数叫做种子）</p>
+<h3 id="9-annotation-类型的切入点只在有接口方法声明的前提下生效，为什么"><a href="#9-annotation-类型的切入点只在有接口方法声明的前提下生效，为什么" class="headerlink" title="#9 @annotation 类型的切入点只在有接口方法声明的前提下生效，为什么"></a>#9 @annotation 类型的切入点只在有接口方法声明的前提下生效，为什么</h3><p>昨天那个问题我基本上已经串起来了，我灵机一动看了一下 idea 的调用栈视图（这个方法在整个流程的什么位置已经直观的在调用栈里显示出来了）</p>
+<p><img src="/notes/index/9-1.png" alt="图9-1"></p>
+<p>大致的是：</p>
+<ol>
+<li><p>在Spring创建我那个被切入的Service的Bean的时候，也就是 doCreateBean 的时候会执行一个初始化流程，也就是执行这个方法： org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#initializeBean(java.lang.String, java.lang.Object, org.springframework.beans.factory.support.RootBeanDefinition)</p>
+</li>
+<li><p>在上面这个方法里有一个应用后处理器（BeanPostProcessor）的调用 ，也就是 执行applyBeanPostProcessorsAfterInitialization </p>
+</li>
+<li><p>在上面那个方法里会调用 BeanPostProcessor的postProcessAfterInitialization，而执行的对象是AbstractAutoProxyCreator，也就是执行这个方法： org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator#postProcessAfterInitialization</p>
+</li>
+<li><p>上边那个方法会调用 wrapIfNecessary （Wrap the given bean if necessary, i.e. if it is eligible for being proxied.）</p>
+</li>
+<li><p>上边那个方法会调用 getAdvicesAndAdvisorsForBean （ Return whether the given bean is to be proxied, what additional advices (e.g. AOP Alliance interceptors) and advisors to apply.）</p>
+</li>
+<li><p>上边方法会调用 findEligibleAdvisors （Find all eligible Advisors for auto-proxying this class.）也就是找到所有合格的 Advisor （Advisor 是增强器，对应了我们自己写的标注了@Aspect的类中具体对原需要增强方法的增强操作）</p>
+</li>
+<li><p>然后上边方法调用 findAdvisorsThatCanApply （Search the given candidate Advisors to find all Advisors that）</p>
+</li>
+<li><p>然后上边调用 findAdvisorsThatCanApply （Determine the sublist of the {@code candidateAdvisors} list that is applicable to the given class.）</p>
+</li>
+<li><p>然后调用 canApply （Can the given advisor apply at all on the given class?）</p>
+</li>
+<li><p>然后调用 org.springframework.aop.support.AopUtils#canApply(org.springframework.aop.Pointcut, java.lang.Class<?>, boolean)
+这个也就是昨天我加断点的方法，
+在这个方法里通过切入点定义 Pointcut 以及通过 ClassUtils.getAllInterfacesForClassAsSet(targetClass) 找到的切入目标类的接口（重点是*接口*）然后循环此接口的所有方法来判断是不是能被切入（具体调用 org.springframework.aop.aspectj.AspectJExpressionPointcut#matches(java.lang.reflect.Method, java.lang.Class<?>, boolean) 来判断）</p>
+</li>
+</ol>
 
         
       </div>
@@ -899,7 +928,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-等待通知机制"><span class="nav-number">2.1.</span> <span class="nav-text">#1 等待通知机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-多态、虚方法表"><span class="nav-number">2.2.</span> <span class="nav-text">#2 多态、虚方法表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-类初始化锁"><span class="nav-number">2.3.</span> <span class="nav-text">#3 类初始化锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-记录一次JVM-old过高的排查"><span class="nav-number">2.4.</span> <span class="nav-text">#4 记录一次JVM old过高的排查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-实现一个小顶堆"><span class="nav-number">2.5.</span> <span class="nav-text">#5 实现一个小顶堆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-JMM对64位数据类型有特殊规范"><span class="nav-number">2.6.</span> <span class="nav-text">#6 JMM对64位数据类型有特殊规范</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-new-都做了什么操作"><span class="nav-number">2.7.</span> <span class="nav-text">#7 new 都做了什么操作</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-等待通知机制"><span class="nav-number">2.1.</span> <span class="nav-text">#1 等待通知机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-多态、虚方法表"><span class="nav-number">2.2.</span> <span class="nav-text">#2 多态、虚方法表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-类初始化锁"><span class="nav-number">2.3.</span> <span class="nav-text">#3 类初始化锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-记录一次JVM-old过高的排查"><span class="nav-number">2.4.</span> <span class="nav-text">#4 记录一次JVM old过高的排查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-实现一个小顶堆"><span class="nav-number">2.5.</span> <span class="nav-text">#5 实现一个小顶堆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-JMM对64位数据类型有特殊规范"><span class="nav-number">2.6.</span> <span class="nav-text">#6 JMM对64位数据类型有特殊规范</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-new-都做了什么操作"><span class="nav-number">2.7.</span> <span class="nav-text">#7 new 都做了什么操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-随机数"><span class="nav-number">2.8.</span> <span class="nav-text">#8 随机数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-annotation-类型的切入点只在有接口方法声明的前提下生效，为什么"><span class="nav-number">2.9.</span> <span class="nav-text">#9 @annotation 类型的切入点只在有接口方法声明的前提下生效，为什么</span></a></li></ol></li></ol></div>
             
 
           </div>
