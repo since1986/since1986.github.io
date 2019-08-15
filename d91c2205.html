@@ -101,17 +101,19 @@
 
 
   <meta name="description" content="前言偶然在一次单元测试中写了一个非常长的字符串字面量。 正文在一次单元测试中，我写了一个很长的字符串字面量，大概10万个字符左右，编译时，编译器给出了异常告警 java: constant string too long，当时我就惊呆了，惊讶于平常写的字符串字面量竟然还有长度限制？？？（黑人问号）。然后我来了兴致，我倒要看看字符串字面量到底能写到多少个字符不报错。于是我试了大概10分钟左右，发现">
-<meta name="keywords" content="JDK">
+<meta name="keywords" content="源码,JDK,JVM">
 <meta property="og:type" content="article">
 <meta property="og:title" content="字符串字面量长度是有限制的">
 <meta property="og:url" content="https://since1986.github.io/d91c2205.html">
 <meta property="og:site_name" content="Since1986">
 <meta property="og:description" content="前言偶然在一次单元测试中写了一个非常长的字符串字面量。 正文在一次单元测试中，我写了一个很长的字符串字面量，大概10万个字符左右，编译时，编译器给出了异常告警 java: constant string too long，当时我就惊呆了，惊讶于平常写的字符串字面量竟然还有长度限制？？？（黑人问号）。然后我来了兴致，我倒要看看字符串字面量到底能写到多少个字符不报错。于是我试了大概10分钟左右，发现">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-07-24T04:05:12.726Z">
+<meta property="og:image" content="https://since1986.github.io/d91c2205/1.png">
+<meta property="og:updated_time" content="2019-08-15T06:11:14.371Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="字符串字面量长度是有限制的">
 <meta name="twitter:description" content="前言偶然在一次单元测试中写了一个非常长的字符串字面量。 正文在一次单元测试中，我写了一个很长的字符串字面量，大概10万个字符左右，编译时，编译器给出了异常告警 java: constant string too long，当时我就惊呆了，惊讶于平常写的字符串字面量竟然还有长度限制？？？（黑人问号）。然后我来了兴致，我倒要看看字符串字面量到底能写到多少个字符不报错。于是我试了大概10分钟左右，发现">
+<meta name="twitter:image" content="https://since1986.github.io/d91c2205/1.png">
 
 
 
@@ -424,12 +426,24 @@
                 
               
 
-              <time title="创建时间：2019-07-24 10:22:09 / 修改时间：12:05:12" itemprop="dateCreated datePublished" datetime="2019-07-24T10:22:09+08:00">2019-07-24</time>
+              <time title="创建时间：2019-07-24 10:22:09" itemprop="dateCreated datePublished" datetime="2019-07-24T10:22:09+08:00">2019-07-24</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-08-15 14:11:14" itemprop="dateModified" datetime="2019-08-15T14:11:14+08:00">2019-08-15</time>
               
             
           </span>
@@ -457,7 +471,7 @@
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">69k</span>
+                <span title="本文字数">70k</span>
               
 
               
@@ -523,6 +537,15 @@
 <p>那这个又是怎么回事呢？其实这个我倒是能知道个大概，因为我以前就知道，Eclipse编译Java代码并不用 <code>Javac</code> （可参考<a href="https://stackoverflow.com/questions/47623117/which-java-compiler-is-used-by-eclipse" target="_blank" rel="noopener">Which Java compiler is used by Eclipse?
 </a>）而是用的 <a href="https://www.eclipse.org/jdt/core/" target="_blank" rel="noopener">JDT</a> 也就是他们自己写的一个编译器，Eclipse能正常编译超过 <code>65534</code> 的字面量，那只能说明他们没在自己的编译器里做长度限制。</p>
 <p>那么，第二篇文章的观点岂不是和第三篇有些相悖了？要是在 <code>class</code> 文件格式层面就做了限制，那么理论上Eclipse编译出来的应该完全跑不起来或者完全就不应该编译成功啊？这里我也不是很明白，留着以后知识盲区被修补了再继续了解吧，反正我现在更倾向于这个限制只是在编译器实现层面加的。</p>
+<h2 id="更新与勘误"><a href="#更新与勘误" class="headerlink" title="更新与勘误"></a>更新与勘误</h2><h3 id="2019-08-15-更新"><a href="#2019-08-15-更新" class="headerlink" title="2019-08-15 更新"></a>2019-08-15 更新</h3><p>后来我在知乎上关于这个主题进行了提问：<a href="https://www.zhihu.com/question/340521220/" target="_blank" rel="noopener">Java中字符串字面量的65534限制和CONSTANT_Utf8_info的length有关系吗?</a></p>
+<ul>
+<li>之所以JDT能编译过，只是因为JDT优化为了StringBuilder的append</li>
+</ul>
+<img src="/d91c2205/1.png">
+
+<ul>
+<li>之所以限制是 65534 而不是 65535 只是因为 Javac 源码中做的限制是<code>((String)constValue).length() &lt; Pool.MAX_STRING_LENGTH)</code> 注意是 <code>&lt;</code> 而不是 <code>&lt;=</code> ， 小于65535那自然最多只能是65534了(搞明白这个得感谢“杭州-半拍”的帮助)</li>
+</ul>
 
       
     </div>
@@ -573,7 +596,11 @@
         
         <div class="post-tags">
           
+            <a href="/tags/源码/" rel="tag"># 源码</a>
+          
             <a href="/tags/JDK/" rel="tag"># JDK</a>
+          
+            <a href="/tags/JVM/" rel="tag"># JVM</a>
           
         </div>
       
@@ -732,159 +759,7 @@
                     
                       
                     
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">98</span>
+                    <span class="site-state-item-count">22</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -1004,7 +879,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#更新与勘误"><span class="nav-number">3.</span> <span class="nav-text">更新与勘误</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2019-08-15-更新"><span class="nav-number">3.1.</span> <span class="nav-text">2019-08-15 更新</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -1057,7 +932,7 @@
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">6:03</span>
+    <span title="站点阅读时长">6:04</span>
   
 </div>
 

@@ -101,14 +101,14 @@
 
 
   <meta name="description" content="前几天参加了一场面试，当时有这莫一道题： 1如何充分利用多核CPU，计算很大List中所有整数的和？  老实说，我当时并没有想出来具体该如何实现，只是有个大致的方向，肯定是分治法的思想；这两天我一直在尝试将这些当时没做出来的题想办法做出来，查了一些资料，看了若干文章，现在反过头来再来尝试解决一下这个题吧。 经过这两天的学习，我基本上搜集到了两种解这道题的思路：1.用CyclicBarrier这种方">
-<meta name="keywords" content="并发编程">
+<meta name="keywords" content="Java基础">
 <meta property="og:type" content="article">
 <meta property="og:title" content="重做一道Java面试题(Fork&#x2F;Join)">
 <meta property="og:url" content="https://since1986.github.io/111da3a8.html">
 <meta property="og:site_name" content="Since1986">
 <meta property="og:description" content="前几天参加了一场面试，当时有这莫一道题： 1如何充分利用多核CPU，计算很大List中所有整数的和？  老实说，我当时并没有想出来具体该如何实现，只是有个大致的方向，肯定是分治法的思想；这两天我一直在尝试将这些当时没做出来的题想办法做出来，查了一些资料，看了若干文章，现在反过头来再来尝试解决一下这个题吧。 经过这两天的学习，我基本上搜集到了两种解这道题的思路：1.用CyclicBarrier这种方">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-06-06T09:47:41.367Z">
+<meta property="og:updated_time" content="2019-08-15T06:12:32.787Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="重做一道Java面试题(Fork&#x2F;Join)">
 <meta name="twitter:description" content="前几天参加了一场面试，当时有这莫一道题： 1如何充分利用多核CPU，计算很大List中所有整数的和？  老实说，我当时并没有想出来具体该如何实现，只是有个大致的方向，肯定是分治法的思想；这两天我一直在尝试将这些当时没做出来的题想办法做出来，查了一些资料，看了若干文章，现在反过头来再来尝试解决一下这个题吧。 经过这两天的学习，我基本上搜集到了两种解这道题的思路：1.用CyclicBarrier这种方">
@@ -441,7 +441,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-06 17:47:41" itemprop="dateModified" datetime="2019-06-06T17:47:41+08:00">2019-06-06</time>
+                <time title="修改时间：2019-08-15 14:12:32" itemprop="dateModified" datetime="2019-08-15T14:12:32+08:00">2019-08-15</time>
               
             
           </span>
@@ -519,6 +519,8 @@
 </ul>
 <p>具体的看代码吧：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">package com.github.since1986.test;</span><br><span class="line"></span><br><span class="line">import java.util.concurrent.ExecutionException;</span><br><span class="line">import java.util.concurrent.ForkJoinPool;</span><br><span class="line">import java.util.concurrent.Future;</span><br><span class="line">import java.util.concurrent.RecursiveTask;</span><br><span class="line">import java.util.stream.IntStream;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * Created by since1986 on 2017/9/17.</span><br><span class="line"> */</span><br><span class="line">public class ForkJoinTest &#123;</span><br><span class="line"></span><br><span class="line">    public static void main(String... args) throws InterruptedException, ExecutionException &#123;</span><br><span class="line">        int[] array = IntStream.rangeClosed(0, 1_00_000_000).toArray(); //模拟一个“很大”的List，这里用直接用数组代替了（题目里其实也没说明白“很大”到底是什么概念，实际上太大了会OOM，但我觉得这道题主要考查的是对并发编程的基本思路吧，应该不会考察太深的，所以不用在意了，要是确实是要把怎么样避免OOM也考虑到的话暂时还没想到应该怎样解决）</span><br><span class="line"></span><br><span class="line">        //简单粗暴的做法</span><br><span class="line">        int sum = 0;</span><br><span class="line">        for (int i = 0; i &lt; array.length; i++) &#123;</span><br><span class="line">            sum += array[i];</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(sum);</span><br><span class="line"></span><br><span class="line">        //Fork/Join的做法</span><br><span class="line">        ForkJoinPool forkJoinPool = new ForkJoinPool(); //起一个数量等于可用CPU核数的池子（对应题目中“充分利用多核”）</span><br><span class="line">        Task task = new Task(0, array.length, 10_000, array);</span><br><span class="line"></span><br><span class="line">        Future&lt;Integer&gt; future = forkJoinPool.submit(task); //提交Task</span><br><span class="line">        System.out.println(future.get()); //获得返回值</span><br><span class="line"></span><br><span class="line">        forkJoinPool.shutdown(); //关闭池子</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    static class Task extends RecursiveTask&lt;Integer&gt; &#123;</span><br><span class="line"></span><br><span class="line">        public static final int DEFAULT_THRESHOLD = 1000;</span><br><span class="line">        private int high, low;</span><br><span class="line">        private int threshold;</span><br><span class="line">        private int[] array;</span><br><span class="line"></span><br><span class="line">        Task(int low, int high, int threshold, int[] array) &#123;</span><br><span class="line">            this.array = array;</span><br><span class="line">            this.low = low;</span><br><span class="line">            this.high = high;</span><br><span class="line">            this.threshold = threshold; //任务划分的最小值（若为1000则含义是Fork到1000大小时就不再继续Fork了）</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        @Override</span><br><span class="line">        protected Integer compute() &#123;</span><br><span class="line">            //System.out.println(&quot;low: &quot; + low + &quot;  high: &quot; + high);</span><br><span class="line">            if (high - low &lt;= threshold) &#123; //到了不能再Fork的阈值后直接循环累加返回</span><br><span class="line">                int sum = 0;</span><br><span class="line">                for (int i = low; i &lt; high; i++) &#123;</span><br><span class="line">                    sum += array[i];</span><br><span class="line">                &#125;</span><br><span class="line">                //System.out.println(&quot;sum: &quot; + sum);</span><br><span class="line">                return sum;</span><br><span class="line">            &#125; else &#123; //没有到阈值的话，继续递归拆分任务为左任务和右任务（分治法的思想）</span><br><span class="line">                int middle = (high - low) / 2 + low;</span><br><span class="line">                //System.out.println(&quot;middle: &quot; + middle);</span><br><span class="line">                Task leftHandTask = new Task(low, middle, threshold, array); //左任务</span><br><span class="line">                Task rightHandTask = new Task(middle, high, threshold, array); //右任务</span><br><span class="line">                leftHandTask.fork(); //左任务还要继续拆，直到满足上边if里的阈值条件</span><br><span class="line">                rightHandTask.fork(); //右任务也要继续拆，直到满足上边if里的阈值条件</span><br><span class="line">                return leftHandTask.join() + rightHandTask.join(); //最后Join得到结果</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
       
     </div>
 
@@ -568,7 +570,7 @@
         
         <div class="post-tags">
           
-            <a href="/tags/并发编程/" rel="tag"># 并发编程</a>
+            <a href="/tags/Java基础/" rel="tag"># Java基础</a>
           
         </div>
       
@@ -718,159 +720,7 @@
                     
                       
                     
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">98</span>
+                    <span class="site-state-item-count">22</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -1026,7 +876,7 @@
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">6:03</span>
+    <span title="站点阅读时长">6:04</span>
   
 </div>
 

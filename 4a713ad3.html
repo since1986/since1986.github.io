@@ -101,7 +101,7 @@
 
 
   <meta name="description" content="背景今天在 Junit 中尝试调试多线程业务，结果发现，testXX 方法中早早就退出了虚拟机，启动的子线程全都压根没有执行，也就是 Junit 中无法正常的测试多线程。 分析一开始，我以为是在主线程中出现了异常，导致了虚拟机的退出，但是做了一个小实验分析了一下，发现不是那么回事。经过试验，我发现，无论是 Exception RuntimeException 甚至 Error 都不能造成虚拟机的退">
-<meta name="keywords" content="源码分析,Junit,多线程">
+<meta name="keywords" content="源码">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Junit无法正常测试多线程问题原因分析与解决">
 <meta property="og:url" content="https://since1986.github.io/4a713ad3.html">
@@ -109,7 +109,7 @@
 <meta property="og:description" content="背景今天在 Junit 中尝试调试多线程业务，结果发现，testXX 方法中早早就退出了虚拟机，启动的子线程全都压根没有执行，也就是 Junit 中无法正常的测试多线程。 分析一开始，我以为是在主线程中出现了异常，导致了虚拟机的退出，但是做了一个小实验分析了一下，发现不是那么回事。经过试验，我发现，无论是 Exception RuntimeException 甚至 Error 都不能造成虚拟机的退">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://since1986.github.io/4a713ad3/Snipaste_2018-05-23_14-30-10.png">
-<meta property="og:updated_time" content="2019-06-06T09:47:41.111Z">
+<meta property="og:updated_time" content="2019-08-15T06:11:14.537Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Junit无法正常测试多线程问题原因分析与解决">
 <meta name="twitter:description" content="背景今天在 Junit 中尝试调试多线程业务，结果发现，testXX 方法中早早就退出了虚拟机，启动的子线程全都压根没有执行，也就是 Junit 中无法正常的测试多线程。 分析一开始，我以为是在主线程中出现了异常，导致了虚拟机的退出，但是做了一个小实验分析了一下，发现不是那么回事。经过试验，我发现，无论是 Exception RuntimeException 甚至 Error 都不能造成虚拟机的退">
@@ -443,7 +443,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-06 17:47:41" itemprop="dateModified" datetime="2019-06-06T17:47:41+08:00">2019-06-06</time>
+                <time title="修改时间：2019-08-15 14:11:14" itemprop="dateModified" datetime="2019-08-15T14:11:14+08:00">2019-08-15</time>
               
             
           </span>
@@ -571,11 +571,7 @@
         
         <div class="post-tags">
           
-            <a href="/tags/源码分析/" rel="tag"># 源码分析</a>
-          
-            <a href="/tags/Junit/" rel="tag"># Junit</a>
-          
-            <a href="/tags/多线程/" rel="tag"># 多线程</a>
+            <a href="/tags/源码/" rel="tag"># 源码</a>
           
         </div>
       
@@ -734,159 +730,7 @@
                     
                       
                     
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">98</span>
+                    <span class="site-state-item-count">22</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -1059,7 +903,7 @@
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">6:03</span>
+    <span title="站点阅读时长">6:04</span>
   
 </div>
 

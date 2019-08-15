@@ -101,14 +101,14 @@
 
 
   <meta name="description" content="刚刚在看spring-boot的源码，偶然发现了spring-boot中推断main()所在类名的处理方法，感觉很巧妙，记录一下。原理就是手工抛一个RuntimeException然后获得这个RuntimeException的StackTraceElement[]，迭代每个StackTraceElement从中找出methodName为main的那一个的className。 12345678910">
-<meta name="keywords" content="源码分析,技巧,spring-boot">
+<meta name="keywords" content="源码,spring-boot">
 <meta property="og:type" content="article">
 <meta property="og:title" content="spring-boot中推断main方法所在类名的方法">
 <meta property="og:url" content="https://since1986.github.io/4efb37b0.html">
 <meta property="og:site_name" content="Since1986">
 <meta property="og:description" content="刚刚在看spring-boot的源码，偶然发现了spring-boot中推断main()所在类名的处理方法，感觉很巧妙，记录一下。原理就是手工抛一个RuntimeException然后获得这个RuntimeException的StackTraceElement[]，迭代每个StackTraceElement从中找出methodName为main的那一个的className。 12345678910">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-06-06T09:47:41.182Z">
+<meta property="og:updated_time" content="2019-08-15T06:11:14.584Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="spring-boot中推断main方法所在类名的方法">
 <meta name="twitter:description" content="刚刚在看spring-boot的源码，偶然发现了spring-boot中推断main()所在类名的处理方法，感觉很巧妙，记录一下。原理就是手工抛一个RuntimeException然后获得这个RuntimeException的StackTraceElement[]，迭代每个StackTraceElement从中找出methodName为main的那一个的className。 12345678910">
@@ -441,7 +441,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-06 17:47:41" itemprop="dateModified" datetime="2019-06-06T17:47:41+08:00">2019-06-06</time>
+                <time title="修改时间：2019-08-15 14:11:14" itemprop="dateModified" datetime="2019-08-15T14:11:14+08:00">2019-08-15</time>
               
             
           </span>
@@ -469,7 +469,7 @@
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">633</span>
+                <span title="本文字数">635</span>
               
 
               
@@ -505,6 +505,8 @@
       
         <p>刚刚在看<code>spring-boot</code>的源码，偶然发现了<code>spring-boot</code>中推断<code>main()</code>所在类名的处理方法，感觉很巧妙，记录一下。原理就是手工抛一个<code>RuntimeException</code>然后获得这个<code>RuntimeException</code>的<code>StackTraceElement[]</code>，迭代每个<code>StackTraceElement</code>从中找出<code>methodName</code>为<code>main</code>的那一个的<code>className</code>。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Class&lt;?&gt; deduceMainApplicationClass() &#123;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		StackTraceElement[] stackTrace = <span class="keyword">new</span> RuntimeException().getStackTrace();</span><br><span class="line">		<span class="keyword">for</span> (StackTraceElement stackTraceElement : stackTrace) &#123;</span><br><span class="line">			<span class="keyword">if</span> (<span class="string">"main"</span>.equals(stackTraceElement.getMethodName())) &#123;</span><br><span class="line">				<span class="keyword">return</span> Class.forName(stackTraceElement.getClassName());</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">catch</span> (ClassNotFoundException ex) &#123;</span><br><span class="line">		<span class="comment">// Swallow and continue</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
       
     </div>
 
@@ -554,9 +556,7 @@
         
         <div class="post-tags">
           
-            <a href="/tags/源码分析/" rel="tag"># 源码分析</a>
-          
-            <a href="/tags/技巧/" rel="tag"># 技巧</a>
+            <a href="/tags/源码/" rel="tag"># 源码</a>
           
             <a href="/tags/spring-boot/" rel="tag"># spring-boot</a>
           
@@ -708,159 +708,7 @@
                     
                       
                     
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">98</span>
+                    <span class="site-state-item-count">22</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -1016,7 +864,7 @@
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">6:03</span>
+    <span title="站点阅读时长">6:04</span>
   
 </div>
 
