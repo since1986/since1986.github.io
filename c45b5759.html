@@ -110,7 +110,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://since1986.github.io/c45b5759/1612b6b7a730a9e8.png">
 <meta property="og:image" content="https://since1986.github.io/c45b5759/1612b6b9c7da64cf.png">
-<meta property="og:updated_time" content="2019-08-15T06:11:14.537Z">
+<meta property="og:updated_time" content="2019-08-15T09:03:17.401Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="多次字符串相加一定要用StringBuilder而不用 + 吗？">
 <meta name="twitter:description" content="今天在写一个读取Java class File并进行分析的Demo时，偶然发现了下面这个场景(基于oracle jdk 1.8.0_144)： 12345678910package test;public class Test8 &amp;#123;    String s1 = &amp;quot;111&amp;quot;, s2 = &amp;quot;222&amp;quot;, s3 = &amp;quot;333&amp;quot;, s4">
@@ -444,7 +444,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-08-15 14:11:14" itemprop="dateModified" datetime="2019-08-15T14:11:14+08:00">2019-08-15</time>
+                <time title="修改时间：2019-08-15 17:03:17" itemprop="dateModified" datetime="2019-08-15T17:03:17+08:00">2019-08-15</time>
               
             
           </span>
@@ -472,7 +472,7 @@
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">6.6k</span>
+                <span title="本文字数">6.9k</span>
               
 
               
@@ -542,6 +542,10 @@
 
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line">// class version 52.0 (52)</span><br><span class="line">// access flags 0x21</span><br><span class="line">public class io/since1986/demo/Test10 &#123;</span><br><span class="line"></span><br><span class="line">  // compiled from: Test10.java</span><br><span class="line"></span><br><span class="line">  // access flags 0x1</span><br><span class="line">  public &lt;init&gt;()V</span><br><span class="line">   L0</span><br><span class="line">    LINENUMBER 3 L0</span><br><span class="line">    ALOAD 0</span><br><span class="line">    INVOKESPECIAL java/lang/Object.&lt;init&gt; ()V</span><br><span class="line">    RETURN</span><br><span class="line">   L1</span><br><span class="line">    LOCALVARIABLE this Lio/since1986/demo/Test10; L0 L1 0</span><br><span class="line">    MAXSTACK = 1</span><br><span class="line">    MAXLOCALS = 1</span><br><span class="line"></span><br><span class="line">  // access flags 0x9</span><br><span class="line">  public static main([Ljava/lang/String;)V</span><br><span class="line">   L0</span><br><span class="line">    LINENUMBER 6 L0</span><br><span class="line">    LDC &quot;1111DDDDFFFGGGGG&quot;</span><br><span class="line">    ASTORE 1</span><br><span class="line">   L1</span><br><span class="line">    LINENUMBER 7 L1</span><br><span class="line">    ICONST_0</span><br><span class="line">    ISTORE 2</span><br><span class="line">   L2</span><br><span class="line">   FRAME APPEND [java/lang/String I]</span><br><span class="line">    ILOAD 2</span><br><span class="line">    BIPUSH 99</span><br><span class="line">    IF_ICMPGE L3</span><br><span class="line">   L4</span><br><span class="line">    LINENUMBER 8 L4</span><br><span class="line">    NEW java/lang/StringBuilder    // 注意这里是在循环内创建 StringBuilder</span><br><span class="line">    DUP</span><br><span class="line">    INVOKESPECIAL java/lang/StringBuilder.&lt;init&gt; ()V</span><br><span class="line">    ALOAD 1</span><br><span class="line">    INVOKEVIRTUAL java/lang/StringBuilder.append (Ljava/lang/String;)Ljava/lang/StringBuilder;</span><br><span class="line">    LDC &quot;3fghjl&quot;</span><br><span class="line">    INVOKEVIRTUAL java/lang/StringBuilder.append (Ljava/lang/String;)Ljava/lang/StringBuilder;</span><br><span class="line">    INVOKEVIRTUAL java/lang/StringBuilder.toString ()Ljava/lang/String;</span><br><span class="line">    ASTORE 1</span><br><span class="line">   L5</span><br><span class="line">    LINENUMBER 7 L5</span><br><span class="line">    IINC 2 1</span><br><span class="line">    GOTO L2</span><br><span class="line">   L3</span><br><span class="line">    LINENUMBER 10 L3</span><br><span class="line">   FRAME CHOP 1</span><br><span class="line">    GETSTATIC java/lang/System.out : Ljava/io/PrintStream;</span><br><span class="line">    ALOAD 1</span><br><span class="line">    INVOKEVIRTUAL java/io/PrintStream.println (Ljava/lang/String;)V</span><br><span class="line">   L6</span><br><span class="line">    LINENUMBER 11 L6</span><br><span class="line">    RETURN</span><br><span class="line">   L7</span><br><span class="line">    LOCALVARIABLE i I L2 L3 2</span><br><span class="line">    LOCALVARIABLE args [Ljava/lang/String; L0 L7 0</span><br><span class="line">    LOCALVARIABLE s Ljava/lang/String; L1 L7 1</span><br><span class="line">    MAXSTACK = 2</span><br><span class="line">    MAXLOCALS = 3</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+<h3 id="2019-08-15-更新"><a href="#2019-08-15-更新" class="headerlink" title="2019-08-15 更新"></a>2019-08-15 更新</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GETFIELD test/Test8.s4 : Ljava/lang/String;</span><br><span class="line">    INVOKEVIRTUAL java/lang/StringBuilder.append (Ljava/lang/String;)Ljava/lang/StringBuilder;</span><br><span class="line">    LDC &quot;555566666666666666666666666666777&quot;</span><br></pre></td></tr></table></figure>
+
+<p>“5555” + “66666666666666666666666666” + “777” 直接被合并在了一块，这个操作叫 <code>常量折叠</code></p>
+<p><a href="https://www.zhihu.com/question/35014775/answer/60785988" target="_blank" rel="noopener">Java中，关于String类型的变量和常量做“+”运算时发生了什么？</a></p>
 
       
     </div>
@@ -873,7 +877,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#更新与勘误"><span class="nav-number">1.</span> <span class="nav-text">更新与勘误</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2019-08-13-更新"><span class="nav-number">1.1.</span> <span class="nav-text">2019-08-13 更新</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#更新与勘误"><span class="nav-number">1.</span> <span class="nav-text">更新与勘误</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2019-08-13-更新"><span class="nav-number">1.1.</span> <span class="nav-text">2019-08-13 更新</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2019-08-15-更新"><span class="nav-number">1.2.</span> <span class="nav-text">2019-08-15 更新</span></a></li></ol></li></ol></div>
             
 
           </div>
