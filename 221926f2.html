@@ -100,13 +100,18 @@
 
 
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Since1986">
-<meta property="og:url" content="https://since1986.github.io/tags/Java基础/index.html">
+  <meta name="description" content="前言记录几个入口点，备忘，方便以后调试用。 正文参数绑定流程的调用栈： 1234567891011121314151617181920212223242526272829303132333435363738394041424344getProperty:115, DynamicContext$ContextAccessor (org.apache.ibatis.scripting.xmltags)">
+<meta name="keywords" content="源码">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MyBatis源码调试的几个入口点">
+<meta property="og:url" content="https://since1986.github.io/221926f2.html">
 <meta property="og:site_name" content="Since1986">
+<meta property="og:description" content="前言记录几个入口点，备忘，方便以后调试用。 正文参数绑定流程的调用栈： 1234567891011121314151617181920212223242526272829303132333435363738394041424344getProperty:115, DynamicContext$ContextAccessor (org.apache.ibatis.scripting.xmltags)">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-08-16T12:28:59.673Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Since1986">
+<meta name="twitter:title" content="MyBatis源码调试的几个入口点">
+<meta name="twitter:description" content="前言记录几个入口点，备忘，方便以后调试用。 正文参数绑定流程的调用栈： 1234567891011121314151617181920212223242526272829303132333435363738394041424344getProperty:115, DynamicContext$ContextAccessor (org.apache.ibatis.scripting.xmltags)">
 
 
 
@@ -114,7 +119,7 @@
 
   
   
-  <link rel="canonical" href="https://since1986.github.io/tags/Java基础/">
+  <link rel="canonical" href="https://since1986.github.io/221926f2">
 
 
 
@@ -124,7 +129,7 @@
   };
 </script>
 
-  <title>标签: Java基础 | Since1986</title>
+  <title>MyBatis源码调试的几个入口点 | Since1986</title>
   
 
 
@@ -172,7 +177,7 @@
     
   
 
-  <div class="container sidebar-position-right ">
+  <div class="container sidebar-position-right page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -244,7 +249,7 @@
         
         
           
-          <li class="menu-item menu-item-tags menu-item-active">
+          <li class="menu-item menu-item-tags">
 
     
     
@@ -356,321 +361,240 @@
           
             
 
-    
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-    
-
-  
-
-
           
           <div id="content" class="content">
             
 
+  <div id="posts" class="posts-expand">
+    
+
+  
+
   
   
   
-  <div class="post-block tag">
 
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h1>Java基础<small>标签</small>
-        </h1>
-      </div>
-
-      
-        
+  
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://since1986.github.io/221926f2.html">
 
-      <h2 class="post-title">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="since1986">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar215x215.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Since1986">
+    </span>
+
+    
+      <header class="post-header">
+
         
-          <a class="post-title-link" href="/8ac5addf.html" itemprop="url">
-            
-              <span itemprop="name">三元表达式返回类型的确定</span>
-            
-          </a>
         
-      </h2>
+          <h1 class="post-title" itemprop="name headline">MyBatis源码调试的几个入口点
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-07-11T20:52:44+08:00" content="2019-07-11">
-          07-11
-        </time>
-      </div>
+              
+            
+          </h1>
+        
 
-    </header>
-  </article>
+        <div class="post-meta">
+          <span class="post-time">
 
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-08-16 20:20:43 / 修改时间：20:28:59" itemprop="dateCreated datePublished" datetime="2019-08-16T20:20:43+08:00">2019-08-16</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">2.5k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">2 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/5b253c16.html" itemprop="url">
-            
-              <span itemprop="name">null可被声明强转为某个类型</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-07-11T20:39:57+08:00" content="2019-07-11">
-          07-11
-        </time>
-      </div>
-
-    </header>
-  </article>
-
+      
 
       
-        
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>记录几个入口点，备忘，方便以后调试用。</p>
+<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>参数绑定流程的调用栈：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">getProperty:115, DynamicContext$ContextAccessor (org.apache.ibatis.scripting.xmltags)</span><br><span class="line">getProperty:2671, OgnlRuntime (org.apache.ibatis.ognl)</span><br><span class="line">getValueBody:114, ASTProperty (org.apache.ibatis.ognl)</span><br><span class="line">evaluateGetValueBody:212, SimpleNode (org.apache.ibatis.ognl)</span><br><span class="line">getValue:258, SimpleNode (org.apache.ibatis.ognl)</span><br><span class="line">getValueBody:50, ASTNotEq (org.apache.ibatis.ognl)</span><br><span class="line">evaluateGetValueBody:212, SimpleNode (org.apache.ibatis.ognl)</span><br><span class="line">getValue:258, SimpleNode (org.apache.ibatis.ognl)</span><br><span class="line">getValueBody:61, ASTAnd (org.apache.ibatis.ognl)</span><br><span class="line">evaluateGetValueBody:212, SimpleNode (org.apache.ibatis.ognl)</span><br><span class="line">getValue:258, SimpleNode (org.apache.ibatis.ognl)</span><br><span class="line">getValue:470, Ognl (org.apache.ibatis.ognl)</span><br><span class="line">getValue:434, Ognl (org.apache.ibatis.ognl)</span><br><span class="line">getValue:44, OgnlCache (org.apache.ibatis.scripting.xmltags)</span><br><span class="line">evaluateBoolean:32, ExpressionEvaluator (org.apache.ibatis.scripting.xmltags)</span><br><span class="line">apply:34, IfSqlNode (org.apache.ibatis.scripting.xmltags)</span><br><span class="line">apply:33, MixedSqlNode (org.apache.ibatis.scripting.xmltags)</span><br><span class="line">apply:55, TrimSqlNode (org.apache.ibatis.scripting.xmltags)</span><br><span class="line">apply:33, MixedSqlNode (org.apache.ibatis.scripting.xmltags)</span><br><span class="line">getBoundSql:41, DynamicSqlSource (org.apache.ibatis.scripting.xmltags)</span><br><span class="line">getBoundSql:292, MappedStatement (org.apache.ibatis.mapping)</span><br><span class="line">query:81, CachingExecutor (org.apache.ibatis.executor)</span><br><span class="line">invoke:-1, GeneratedMethodAccessor191 (sun.reflect)</span><br><span class="line">invoke:43, DelegatingMethodAccessorImpl (sun.reflect)</span><br><span class="line">invoke:498, Method (java.lang.reflect)</span><br><span class="line">invoke:63, Plugin (org.apache.ibatis.plugin)</span><br><span class="line">query:-1, $Proxy398 (com.sun.proxy)</span><br><span class="line">selectList:148, DefaultSqlSession (org.apache.ibatis.session.defaults)</span><br><span class="line">selectList:141, DefaultSqlSession (org.apache.ibatis.session.defaults)</span><br><span class="line">invoke:-1, GeneratedMethodAccessor199 (sun.reflect)</span><br><span class="line">invoke:43, DelegatingMethodAccessorImpl (sun.reflect)</span><br><span class="line">invoke:498, Method (java.lang.reflect)</span><br><span class="line">invoke:433, SqlSessionTemplate$SqlSessionInterceptor (org.mybatis.spring)</span><br><span class="line">selectList:-1, $Proxy121 (com.sun.proxy)</span><br><span class="line">selectList:230, SqlSessionTemplate (org.mybatis.spring)</span><br><span class="line">executeForMany:137, MapperMethod (org.apache.ibatis.binding)</span><br><span class="line">execute:75, MapperMethod (org.apache.ibatis.binding)</span><br><span class="line">invoke:59, MapperProxy (org.apache.ibatis.binding)</span><br><span class="line">// 这里进入MyBatis内部流程</span><br><span class="line"></span><br><span class="line">find:-1, $Proxy355 (com.sun.proxy)</span><br><span class="line">statics1:73, MyBusinessServiceImpl (com.xx.xx.service)</span><br><span class="line">invoke:-1, MyBusinessServiceImpl$$FastClassBySpringCGLIB$$7c756e36 (com.xx.xx.service)</span><br><span class="line">// 业务Service的代理</span><br></pre></td></tr></table></figure>
 
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/337ac5e1.html" itemprop="url">
-            
-              <span itemprop="name">读《tomcat内核设计剖析》学到的一个点</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-07-11T20:33:48+08:00" content="2019-07-11">
-          07-11
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-      
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/c821db80.html" itemprop="url">
-            
-              <span itemprop="name">注意自动拆箱可能引起空指针</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-03-14T16:56:13+08:00" content="2019-03-14">
-          03-14
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-      
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/12b48437.html" itemprop="url">
-            
-              <span itemprop="name">Java中Integer越界的处理</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2018-12-16T11:10:13+08:00" content="2018-12-16">
-          12-16
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-      
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/faa5d31d.html" itemprop="url">
-            
-              <span itemprop="name">关于某个类不能强转为自己的类型的问题的记录</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2018-12-14T16:53:10+08:00" content="2018-12-14">
-          12-14
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-      
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/6c7c33f2.html" itemprop="url">
-            
-              <span itemprop="name">关于String Pool的学习笔记</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2018-10-28T09:16:31+08:00" content="2018-10-28">
-          10-28
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-      
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/bf178159.html" itemprop="url">
-            
-              <span itemprop="name">JDK动态代理实现原理浅析</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2018-04-25T14:28:01+08:00" content="2018-04-25">
-          04-25
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-      
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/dd047d82.html" itemprop="url">
-            
-              <span itemprop="name">ArrayList扩容规则的关键代码</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2018-04-19T16:35:47+08:00" content="2018-04-19">
-          04-19
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-      
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/afedab58.html" itemprop="url">
-            
-              <span itemprop="name">如何通过反射获得方法的真实参数名（以及扩展研究）</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2017-11-07T15:06:56+08:00" content="2017-11-07">
-          11-07
-        </time>
-      </div>
-
-    </header>
-  </article>
-
+<p>// 实际的数据库执行:</p>
+<p><code>org.apache.ibatis.executor.BaseExecutor#queryFromDatabase</code></p>
+<p>// 查看实际生成的SQL，也就是执行完了 <code>&lt;if test=&quot;xxx&quot;&gt;</code> 这样的过滤后最终的 SQL:</p>
+<p><code>org.apache.ibatis.scripting.xmltags.DynamicSqlSource#getBoundSql</code></p>
 
       
     </div>
 
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+      <div>
+        
+
+
+
+
+  
+
+
+
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>since1986</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    
+    <a href="https://since1986.github.io/221926f2.html" title="MyBatis源码调试的几个入口点">https://since1986.github.io/221926f2.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/源码/" rel="tag"># 源码</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/a2be36f4.html" rel="next" title="实现一个小顶堆">
+                <i class="fa fa-chevron-left"></i> 实现一个小顶堆
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
-
-  
-  <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/tags/Java基础/page/2/">2</a><a class="extend next" rel="next" href="/tags/Java基础/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
-  </nav>
+  </article>
 
 
+  </div>
 
 
           </div>
           
+
+  
+
+
 
         </div>
         
@@ -690,8 +614,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <div class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -881,6 +814,23 @@
       </div>
 
       
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
 
       
         <div class="back-to-top">
@@ -1035,6 +985,10 @@
 
 
   
+  <script src="/js/scrollspy.js?v=7.1.2"></script>
+<script src="/js/post-details.js?v=7.1.2"></script>
+
+
 
   
 
@@ -1053,6 +1007,8 @@
 
   
 
+
+  
 
 
   
