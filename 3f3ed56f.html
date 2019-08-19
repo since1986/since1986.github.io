@@ -108,16 +108,16 @@
 <meta property="og:site_name" content="Since1986">
 <meta property="og:description" content="前言今天一位朋友在后端圈群里提了一个关于MyBatis插件的问题，正好有时间，就看了一下。 正文问题大致是：我的工程里有两个MyBatis分页的插件，一个是PageHelper，另一个是自己写的一个分页插件，但是两个插件共存时，总是自己的插件不能执行到，是为什么？ PageHelper的插件: 1234567891011121314151617181920212223242526272829303">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://since1986.github.io/undefined/1.png">
-<meta property="og:image" content="https://since1986.github.io/undefined/2.png">
-<meta property="og:image" content="https://since1986.github.io/undefined/3.png">
-<meta property="og:image" content="https://since1986.github.io/undefined/4.png">
-<meta property="og:image" content="https://since1986.github.io/undefined/5.png">
-<meta property="og:updated_time" content="2019-08-19T14:45:57.097Z">
+<meta property="og:image" content="https://since1986.github.io/3f3ed56f/1.png">
+<meta property="og:image" content="https://since1986.github.io/3f3ed56f/2.png">
+<meta property="og:image" content="https://since1986.github.io/3f3ed56f/3.png">
+<meta property="og:image" content="https://since1986.github.io/3f3ed56f/4.png">
+<meta property="og:image" content="https://since1986.github.io/3f3ed56f/5.png">
+<meta property="og:updated_time" content="2019-08-19T14:50:14.863Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从一个问题初步了解MyBatis的一部分插件执行机制">
 <meta name="twitter:description" content="前言今天一位朋友在后端圈群里提了一个关于MyBatis插件的问题，正好有时间，就看了一下。 正文问题大致是：我的工程里有两个MyBatis分页的插件，一个是PageHelper，另一个是自己写的一个分页插件，但是两个插件共存时，总是自己的插件不能执行到，是为什么？ PageHelper的插件: 1234567891011121314151617181920212223242526272829303">
-<meta name="twitter:image" content="https://since1986.github.io/undefined/1.png">
+<meta name="twitter:image" content="https://since1986.github.io/3f3ed56f/1.png">
 
 
 
@@ -430,7 +430,7 @@
                 
               
 
-              <time title="创建时间：2019-08-19 21:47:36 / 修改时间：22:45:57" itemprop="dateCreated datePublished" datetime="2019-08-19T21:47:36+08:00">2019-08-19</time>
+              <time title="创建时间：2019-08-19 21:47:36 / 修改时间：22:50:14" itemprop="dateCreated datePublished" datetime="2019-08-19T21:47:36+08:00">2019-08-19</time>
             
 
             
@@ -529,10 +529,10 @@
 <li>在正常情况下，我们自己的插件在 <code>private final List&lt;Interceptor&gt; interceptors = new ArrayList&lt;Interceptor&gt;();</code> 这个 <code>interceptors</code> 中的位置考前，而到了下边的生成代理的流程都结束后，最终的<code>target</code>，我们的插件拦截器就成了里层的代理，而PageHelper的代理在外层</li>
 </ol>
 <p>我们的拦截器排位靠前，PageHelper的拦截器排位靠后</p>
-<img src="/undefined/1.png">
+<img src="/3f3ed56f/1.png">
 
 <p>我们的代理在内层，PageHelper的代理在外层</p>
-<img src="/undefined/2.png">
+<img src="/3f3ed56f/2.png">
 
 <ol start="4">
 <li><p>在执行代理时，外层代理先于内层代理执行（具体执行逻辑我没有跟，我是在拦截器的拦截方法上加了断点判断出来的）</p>
@@ -543,15 +543,15 @@
 </li>
 </ol>
 <p>手工调顺序</p>
-<img src="/undefined/3.png">
+<img src="/3f3ed56f/3.png">
 
 <p>可以看到手工调序后我们的代理跑到了外层，而PageHelper的代理成了内层</p>
-<img src="/undefined/4.png">
+<img src="/3f3ed56f/4.png">
 
 <p>PageHelper没有这一句代码，因此内层代理就都不执行了</p>
-<img src="/undefined/5.png">
+<img src="/3f3ed56f/5.png">
 
-<p>到此问题基本结束，就这这个问题我大致了解了一部分MyBatis的内在逻辑，当让看的比较仓促，很多细节尚不清晰，后续继续深入。</p>
+<p>到此问题基本解决，就着这个问题我大致了解了一部分MyBatis的内在逻辑，当然，代码看的比较仓促，很多细节尚不清晰，后续继续深入。</p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://www.jianshu.com/p/7c7b8c2c985d" target="_blank" rel="noopener">Mybatis插件原理</a></p>
 
       
