@@ -112,7 +112,8 @@
 <meta property="og:image" content="https://since1986.github.io/notes/index/2-1.jpg">
 <meta property="og:image" content="https://since1986.github.io/notes/index/7-1.png">
 <meta property="og:image" content="https://since1986.github.io/notes/index/9-1.png">
-<meta property="og:updated_time" content="2019-08-09T10:14:20.413Z">
+<meta property="og:image" content="https://since1986.github.io/notes/index/10-1.png">
+<meta property="og:updated_time" content="2019-09-02T12:19:40.496Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="notes">
 <meta name="twitter:description" content="前言这里记录一些笔记 正文#1 等待通知机制123456789101112131415161718192021222324252627282930313233343536373839// JVM 实现public class Test2 &amp;#123;    private static final Object LOCK = new Object(); // 注意当作锁的对象一定要是final的，">
@@ -525,6 +526,7 @@
 </ol>
 <p>切面（Aspect） = 切入点（Pointcut） + 通知（Advice）</p>
 <p><a href="https://www.cnblogs.com/leeSmall/p/10236553.html" target="_blank" rel="noopener">框架源码系列十：Spring AOP（AOP的核心概念回顾、Spring中AOP的用法、Spring AOP 源码学习）</a></p>
+<h3 id="10-责任链模式尝试"><a href="#10-责任链模式尝试" class="headerlink" title="#10 责任链模式尝试"></a>#10 责任链模式尝试</h3><p><img src="/notes/index/10-1.png" alt="图10-1"></p>
 
         
       </div>
@@ -777,7 +779,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-等待通知机制"><span class="nav-number">2.1.</span> <span class="nav-text">#1 等待通知机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-多态、虚方法表"><span class="nav-number">2.2.</span> <span class="nav-text">#2 多态、虚方法表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-类初始化锁"><span class="nav-number">2.3.</span> <span class="nav-text">#3 类初始化锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-记录一次JVM-old过高的排查"><span class="nav-number">2.4.</span> <span class="nav-text">#4 记录一次JVM old过高的排查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-实现一个小顶堆"><span class="nav-number">2.5.</span> <span class="nav-text">#5 实现一个小顶堆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-JMM对64位数据类型有特殊规范"><span class="nav-number">2.6.</span> <span class="nav-text">#6 JMM对64位数据类型有特殊规范</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-new-都做了什么操作"><span class="nav-number">2.7.</span> <span class="nav-text">#7 new 都做了什么操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-随机数"><span class="nav-number">2.8.</span> <span class="nav-text">#8 随机数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-annotation-类型的切入点只在有接口方法声明的前提下生效，为什么"><span class="nav-number">2.9.</span> <span class="nav-text">#9 @annotation 类型的切入点只在有接口方法声明的前提下生效，为什么</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-等待通知机制"><span class="nav-number">2.1.</span> <span class="nav-text">#1 等待通知机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-多态、虚方法表"><span class="nav-number">2.2.</span> <span class="nav-text">#2 多态、虚方法表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-类初始化锁"><span class="nav-number">2.3.</span> <span class="nav-text">#3 类初始化锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-记录一次JVM-old过高的排查"><span class="nav-number">2.4.</span> <span class="nav-text">#4 记录一次JVM old过高的排查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-实现一个小顶堆"><span class="nav-number">2.5.</span> <span class="nav-text">#5 实现一个小顶堆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-JMM对64位数据类型有特殊规范"><span class="nav-number">2.6.</span> <span class="nav-text">#6 JMM对64位数据类型有特殊规范</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-new-都做了什么操作"><span class="nav-number">2.7.</span> <span class="nav-text">#7 new 都做了什么操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-随机数"><span class="nav-number">2.8.</span> <span class="nav-text">#8 随机数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-annotation-类型的切入点只在有接口方法声明的前提下生效，为什么"><span class="nav-number">2.9.</span> <span class="nav-text">#9 @annotation 类型的切入点只在有接口方法声明的前提下生效，为什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-责任链模式尝试"><span class="nav-number">2.10.</span> <span class="nav-text">#10 责任链模式尝试</span></a></li></ol></li></ol></div>
             
 
           </div>
