@@ -113,7 +113,9 @@
 <meta property="og:image" content="https://since1986.github.io/notes/index/7-1.png">
 <meta property="og:image" content="https://since1986.github.io/notes/index/9-1.png">
 <meta property="og:image" content="https://since1986.github.io/notes/index/10-1.png">
-<meta property="og:updated_time" content="2019-09-02T12:19:40.496Z">
+<meta property="og:image" content="https://since1986.github.io/notes/index/11-1.jpg">
+<meta property="og:image" content="https://since1986.github.io/notes/index/12-1.jpg">
+<meta property="og:updated_time" content="2019-09-06T08:58:35.006Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="notes">
 <meta name="twitter:description" content="前言这里记录一些笔记 正文#1 等待通知机制123456789101112131415161718192021222324252627282930313233343536373839// JVM 实现public class Test2 &amp;#123;    private static final Object LOCK = new Object(); // 注意当作锁的对象一定要是final的，">
@@ -527,6 +529,18 @@
 <p>切面（Aspect） = 切入点（Pointcut） + 通知（Advice）</p>
 <p><a href="https://www.cnblogs.com/leeSmall/p/10236553.html" target="_blank" rel="noopener">框架源码系列十：Spring AOP（AOP的核心概念回顾、Spring中AOP的用法、Spring AOP 源码学习）</a></p>
 <h3 id="10-责任链模式尝试"><a href="#10-责任链模式尝试" class="headerlink" title="#10 责任链模式尝试"></a>#10 责任链模式尝试</h3><p><img src="/notes/index/10-1.png" alt="图10-1"></p>
+<h3 id="11-spring配置方式的变更与DRY"><a href="#11-spring配置方式的变更与DRY" class="headerlink" title="#11 spring配置方式的变更与DRY"></a>#11 spring配置方式的变更与DRY</h3><p>Spring的配置信息由外部配置xml的方式改为内部注解配置的方式正是DRY原则的一种体现，原有的xml配置方式你需要将类的完全限定名等元信息重复的在XML里再写一份，而注解则不需要，因为类自己就是对象的元信息，自描述了，当然不需要外部描述了，这正是DRY的一种体现。</p>
+<p><img src="/notes/index/11-1.jpg" alt="图11-1"></p>
+<h3 id="12-容器管理实例的模式"><a href="#12-容器管理实例的模式" class="headerlink" title="#12 容器管理实例的模式"></a>#12 容器管理实例的模式</h3><p>Spring对于Java中标准的new逻辑的增强，与hibernate中的实体的概念有着异曲同工之妙，都是是用外部容器管理实例，这样可以给整个实例的生命周期中插入很多扩展点，通过扩展点就能玩出很多new玩不出来的新花样</p>
+<p><img src="/notes/index/12-1.jpg" alt="图12-1"></p>
+<h3 id="13-变成本质的一个方面"><a href="#13-变成本质的一个方面" class="headerlink" title="#13 变成本质的一个方面"></a>#13 变成本质的一个方面</h3><p>编程本质的一个方面：将人类的逻辑转化为机器逻辑。</p>
+<p>人类逻辑 -&gt; 自然语言<br>自然语言 -&gt; 高级编程语言<br>高级编程语言 -&gt; 底层编程语言<br>底层编程语言 -&gt; 机器语言<br>机器语言 -&gt; 机器逻辑</p>
+<h3 id="14-分析Java线程CPU占用率高的步骤"><a href="#14-分析Java线程CPU占用率高的步骤" class="headerlink" title="#14 分析Java线程CPU占用率高的步骤"></a>#14 分析Java线程CPU占用率高的步骤</h3><ol>
+<li><code>jps -l</code> 找到Java进程pid</li>
+<li><code>echo &quot;obase=16;&lt;pid&gt;&quot; | bc</code> 得到pid的十六进制值（也可使用在线转换工具）</li>
+<li><code>jstack &lt;pid&gt; | grep &lt;pid_hex&gt;</code> 按上一步得到的十六进制pid搜素jstack的输出结果，从而定位到具体的栈信息</li>
+<li>根据得到的栈信息进行推测</li>
+</ol>
 
         
       </div>
@@ -779,7 +793,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-等待通知机制"><span class="nav-number">2.1.</span> <span class="nav-text">#1 等待通知机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-多态、虚方法表"><span class="nav-number">2.2.</span> <span class="nav-text">#2 多态、虚方法表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-类初始化锁"><span class="nav-number">2.3.</span> <span class="nav-text">#3 类初始化锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-记录一次JVM-old过高的排查"><span class="nav-number">2.4.</span> <span class="nav-text">#4 记录一次JVM old过高的排查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-实现一个小顶堆"><span class="nav-number">2.5.</span> <span class="nav-text">#5 实现一个小顶堆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-JMM对64位数据类型有特殊规范"><span class="nav-number">2.6.</span> <span class="nav-text">#6 JMM对64位数据类型有特殊规范</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-new-都做了什么操作"><span class="nav-number">2.7.</span> <span class="nav-text">#7 new 都做了什么操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-随机数"><span class="nav-number">2.8.</span> <span class="nav-text">#8 随机数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-annotation-类型的切入点只在有接口方法声明的前提下生效，为什么"><span class="nav-number">2.9.</span> <span class="nav-text">#9 @annotation 类型的切入点只在有接口方法声明的前提下生效，为什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-责任链模式尝试"><span class="nav-number">2.10.</span> <span class="nav-text">#10 责任链模式尝试</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-等待通知机制"><span class="nav-number">2.1.</span> <span class="nav-text">#1 等待通知机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-多态、虚方法表"><span class="nav-number">2.2.</span> <span class="nav-text">#2 多态、虚方法表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-类初始化锁"><span class="nav-number">2.3.</span> <span class="nav-text">#3 类初始化锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-记录一次JVM-old过高的排查"><span class="nav-number">2.4.</span> <span class="nav-text">#4 记录一次JVM old过高的排查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-实现一个小顶堆"><span class="nav-number">2.5.</span> <span class="nav-text">#5 实现一个小顶堆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-JMM对64位数据类型有特殊规范"><span class="nav-number">2.6.</span> <span class="nav-text">#6 JMM对64位数据类型有特殊规范</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-new-都做了什么操作"><span class="nav-number">2.7.</span> <span class="nav-text">#7 new 都做了什么操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-随机数"><span class="nav-number">2.8.</span> <span class="nav-text">#8 随机数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-annotation-类型的切入点只在有接口方法声明的前提下生效，为什么"><span class="nav-number">2.9.</span> <span class="nav-text">#9 @annotation 类型的切入点只在有接口方法声明的前提下生效，为什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-责任链模式尝试"><span class="nav-number">2.10.</span> <span class="nav-text">#10 责任链模式尝试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-spring配置方式的变更与DRY"><span class="nav-number">2.11.</span> <span class="nav-text">#11 spring配置方式的变更与DRY</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-容器管理实例的模式"><span class="nav-number">2.12.</span> <span class="nav-text">#12 容器管理实例的模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#13-变成本质的一个方面"><span class="nav-number">2.13.</span> <span class="nav-text">#13 变成本质的一个方面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-分析Java线程CPU占用率高的步骤"><span class="nav-number">2.14.</span> <span class="nav-text">#14 分析Java线程CPU占用率高的步骤</span></a></li></ol></li></ol></div>
             
 
           </div>
