@@ -115,7 +115,12 @@
 <meta property="og:image" content="https://since1986.github.io/notes/index/10-1.png">
 <meta property="og:image" content="https://since1986.github.io/notes/index/11-1.jpg">
 <meta property="og:image" content="https://since1986.github.io/notes/index/12-1.jpg">
-<meta property="og:updated_time" content="2019-09-09T12:16:45.616Z">
+<meta property="og:image" content="https://since1986.github.io/notes/index/18-1.png">
+<meta property="og:image" content="https://since1986.github.io/notes/index/18-2.png">
+<meta property="og:image" content="https://since1986.github.io/notes/index/18-3.png">
+<meta property="og:image" content="https://since1986.github.io/notes/index/18-4.png">
+<meta property="og:image" content="https://since1986.github.io/notes/index/20-1.jpg">
+<meta property="og:updated_time" content="2019-09-18T08:38:59.166Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="notes">
 <meta name="twitter:description" content="前言这里记录一些笔记 正文#1 等待通知机制123456789101112131415161718192021222324252627282930313233343536373839// JVM 实现public class Test2 &amp;#123;    private static final Object LOCK = new Object(); // 注意当作锁的对象一定要是final的，">
@@ -543,6 +548,24 @@
 </ol>
 <h3 id="15-对于Spring-IoC的理解"><a href="#15-对于Spring-IoC的理解" class="headerlink" title="#15 对于Spring IoC的理解"></a>#15 对于Spring IoC的理解</h3><p>对于Spring IoC的理解 ：自动化车间。给定原材料（原始类定义）和规格说明书（元数据，包括注解和xml等），就会生产出产品（Bean），在这个期间不需过多干预，但是提供了扩展点可以进行必要的干预（BeanFactoryPostProcessor 和 BeanPostProcessor）</p>
 <h3 id="16-Spring的设计哲学"><a href="#16-Spring的设计哲学" class="headerlink" title="#16 Spring的设计哲学"></a>#16 Spring的设计哲学</h3><p>核心功能 + 扩展点</p>
+<p>spring的轻量是轻量在设计上 他的微内核设计思想 核心功能BeanFactory很小 很多功能比如自动装配Autoware均是通过扩展点PostProcessor实现的</p>
+<p>比如各种Awre如ApplicationContextAware也是通过PostProcessor实现的？<br>AOP也是通过BeanPostProcessor这个扩展点插入的IoC这个主逻辑中的</p>
+<h3 id="17-对象的本质是-状态-行为"><a href="#17-对象的本质是-状态-行为" class="headerlink" title="#17 对象的本质是 状态 + 行为"></a>#17 对象的本质是 状态 + 行为</h3><blockquote>
+<p>A Class is a software bundle of related states(properties, or variables) and behavior(methods)</p>
+</blockquote>
+<h3 id="18-Spring-兼容循环依赖的做法"><a href="#18-Spring-兼容循环依赖的做法" class="headerlink" title="#18 Spring 兼容循环依赖的做法"></a>#18 Spring 兼容循环依赖的做法</h3><p><img src="/notes/index/18-1.png" alt="图18-1"></p>
+<p><img src="/notes/index/18-2.png" alt="图18-2"></p>
+<p><img src="/notes/index/18-3.png" alt="图18-3"></p>
+<p><img src="/notes/index/18-4.png" alt="图18-4"></p>
+<p>这样加一下断点调一下试试，所有断点都是条件断点 然后两个Bean的无参构造器上加方法断点</p>
+<p>先通过 getBean -&gt; createBean 流程创建Bean3实例，然后通过 InstantiationAwareBeanPostProcessorBean3 在其中解析依赖，解析依赖又会触发创建流程创建，创建Bean4实例，然后又会通过 InstantiationAwareBeanPostProcessorBean4  在其中进行Bean4解析依赖拿出来Bean3设置到自己的属性，然后将已经设置了Bean3 的 Bean4 设置到一开始的 Bean3上，这样Bean3和Bean4就实现了循环依赖</p>
+<p>这个过程大概通俗一点就是  (A -&gt; (B -&gt; BA)) -&gt; ABA</p>
+<p>整个流程应该就是先各自生成一个没依赖的光棍对象Bean，然后把前一个光棍设置后一个光棍当依赖，然后再把已经有依赖的后一个光棍（其实现在已经不是光棍了）设置给前一个光棍当依赖，这样就成了一个环状依赖了</p>
+<h3 id="19-Spring-Bean-Scope"><a href="#19-Spring-Bean-Scope" class="headerlink" title="#19 Spring Bean Scope"></a>#19 Spring Bean Scope</h3><p>Spring bean的两种scope的区别在于对待状态的态度 一个是共享状态 一个是状态独立</p>
+<h3 id="20-RootBeanDefinition"><a href="#20-RootBeanDefinition" class="headerlink" title="#20 RootBeanDefinition"></a>#20 RootBeanDefinition</h3><p>RootBeanDefinition 是对于容器内实例的定义</p>
+<p><img src="/notes/index/20-1.jpg" alt="图20-1"></p>
+<h3 id="21-IoC-的两种实现方式-DF-和-DI"><a href="#21-IoC-的两种实现方式-DF-和-DI" class="headerlink" title="#21 IoC 的两种实现方式 DF 和 DI"></a>#21 IoC 的两种实现方式 DF 和 DI</h3><p>通过容器提供的回调Api而非Java语言级别的Api（setter 、构造器）完成控制，这种方式叫做DF也就是依赖查找 是IoC的另一种实现方式</p>
+<h3 id="22-对于-IoC-的理解"><a href="#22-对于-IoC-的理解" class="headerlink" title="#22 对于 IoC 的理解"></a>#22 对于 IoC 的理解</h3><p>对于IoC的理解：怎样对待依赖：是自己创建依赖，也就是new还是从外部获取依赖，从外部获取依赖分为DF和DI也就是依赖查找和依赖注入</p>
 
         
       </div>
@@ -612,7 +635,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">147</span>
+                    <span class="site-state-item-count">148</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -795,7 +818,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-等待通知机制"><span class="nav-number">2.1.</span> <span class="nav-text">#1 等待通知机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-多态、虚方法表"><span class="nav-number">2.2.</span> <span class="nav-text">#2 多态、虚方法表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-类初始化锁"><span class="nav-number">2.3.</span> <span class="nav-text">#3 类初始化锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-记录一次JVM-old过高的排查"><span class="nav-number">2.4.</span> <span class="nav-text">#4 记录一次JVM old过高的排查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-实现一个小顶堆"><span class="nav-number">2.5.</span> <span class="nav-text">#5 实现一个小顶堆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-JMM对64位数据类型有特殊规范"><span class="nav-number">2.6.</span> <span class="nav-text">#6 JMM对64位数据类型有特殊规范</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-new-都做了什么操作"><span class="nav-number">2.7.</span> <span class="nav-text">#7 new 都做了什么操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-随机数"><span class="nav-number">2.8.</span> <span class="nav-text">#8 随机数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-annotation-类型的切入点只在有接口方法声明的前提下生效，为什么"><span class="nav-number">2.9.</span> <span class="nav-text">#9 @annotation 类型的切入点只在有接口方法声明的前提下生效，为什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-责任链模式尝试"><span class="nav-number">2.10.</span> <span class="nav-text">#10 责任链模式尝试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-spring配置方式的变更与DRY"><span class="nav-number">2.11.</span> <span class="nav-text">#11 spring配置方式的变更与DRY</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-容器管理实例的模式"><span class="nav-number">2.12.</span> <span class="nav-text">#12 容器管理实例的模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#13-变成本质的一个方面"><span class="nav-number">2.13.</span> <span class="nav-text">#13 变成本质的一个方面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-分析Java线程CPU占用率高的步骤"><span class="nav-number">2.14.</span> <span class="nav-text">#14 分析Java线程CPU占用率高的步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-对于Spring-IoC的理解"><span class="nav-number">2.15.</span> <span class="nav-text">#15 对于Spring IoC的理解</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-Spring的设计哲学"><span class="nav-number">2.16.</span> <span class="nav-text">#16 Spring的设计哲学</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-等待通知机制"><span class="nav-number">2.1.</span> <span class="nav-text">#1 等待通知机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-多态、虚方法表"><span class="nav-number">2.2.</span> <span class="nav-text">#2 多态、虚方法表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-类初始化锁"><span class="nav-number">2.3.</span> <span class="nav-text">#3 类初始化锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-记录一次JVM-old过高的排查"><span class="nav-number">2.4.</span> <span class="nav-text">#4 记录一次JVM old过高的排查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-实现一个小顶堆"><span class="nav-number">2.5.</span> <span class="nav-text">#5 实现一个小顶堆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-JMM对64位数据类型有特殊规范"><span class="nav-number">2.6.</span> <span class="nav-text">#6 JMM对64位数据类型有特殊规范</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-new-都做了什么操作"><span class="nav-number">2.7.</span> <span class="nav-text">#7 new 都做了什么操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-随机数"><span class="nav-number">2.8.</span> <span class="nav-text">#8 随机数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-annotation-类型的切入点只在有接口方法声明的前提下生效，为什么"><span class="nav-number">2.9.</span> <span class="nav-text">#9 @annotation 类型的切入点只在有接口方法声明的前提下生效，为什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-责任链模式尝试"><span class="nav-number">2.10.</span> <span class="nav-text">#10 责任链模式尝试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-spring配置方式的变更与DRY"><span class="nav-number">2.11.</span> <span class="nav-text">#11 spring配置方式的变更与DRY</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-容器管理实例的模式"><span class="nav-number">2.12.</span> <span class="nav-text">#12 容器管理实例的模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#13-变成本质的一个方面"><span class="nav-number">2.13.</span> <span class="nav-text">#13 变成本质的一个方面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-分析Java线程CPU占用率高的步骤"><span class="nav-number">2.14.</span> <span class="nav-text">#14 分析Java线程CPU占用率高的步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-对于Spring-IoC的理解"><span class="nav-number">2.15.</span> <span class="nav-text">#15 对于Spring IoC的理解</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-Spring的设计哲学"><span class="nav-number">2.16.</span> <span class="nav-text">#16 Spring的设计哲学</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#17-对象的本质是-状态-行为"><span class="nav-number">2.17.</span> <span class="nav-text">#17 对象的本质是 状态 + 行为</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#18-Spring-兼容循环依赖的做法"><span class="nav-number">2.18.</span> <span class="nav-text">#18 Spring 兼容循环依赖的做法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#19-Spring-Bean-Scope"><span class="nav-number">2.19.</span> <span class="nav-text">#19 Spring Bean Scope</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#20-RootBeanDefinition"><span class="nav-number">2.20.</span> <span class="nav-text">#20 RootBeanDefinition</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#21-IoC-的两种实现方式-DF-和-DI"><span class="nav-number">2.21.</span> <span class="nav-text">#21 IoC 的两种实现方式 DF 和 DI</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#22-对于-IoC-的理解"><span class="nav-number">2.22.</span> <span class="nav-text">#22 对于 IoC 的理解</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -837,7 +860,7 @@
     
       <span class="post-meta-item-text">站点总字数：</span>
     
-    <span title="站点总字数">417k</span>
+    <span title="站点总字数">427k</span>
   
 
   
@@ -848,7 +871,7 @@
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">6:19</span>
+    <span title="站点阅读时长">6:28</span>
   
 </div>
 
