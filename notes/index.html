@@ -129,7 +129,7 @@
 <meta property="og:image" content="https://since1986.github.io/notes/index/49-1.png">
 <meta property="og:image" content="https://since1986.github.io/notes/index/69-1.png">
 <meta property="og:image" content="https://since1986.github.io/notes/index/79-1.jpg">
-<meta property="og:updated_time" content="2019-09-30T07:34:00.103Z">
+<meta property="og:updated_time" content="2019-09-30T07:46:27.267Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="notes">
 <meta name="twitter:description" content="前言这里记录一些笔记 正文#1 等待通知机制123456789101112131415161718192021222324252627282930313233343536373839// JVM 实现public class Test2 &amp;#123;    private static final Object LOCK = new Object(); // 注意当作锁的对象一定要是final的，">
@@ -541,6 +541,7 @@
 </li>
 </ol>
 <p>切面（Aspect） = 切入点（Pointcut） + 通知（Advice）</p>
+<p><em>spring 中 AOP 是通过 BeanPostProcessor 插入到 IoC 流程里的</em></p>
 <p><a href="https://www.cnblogs.com/leeSmall/p/10236553.html" target="_blank" rel="noopener">框架源码系列十：Spring AOP（AOP的核心概念回顾、Spring中AOP的用法、Spring AOP 源码学习）</a></p>
 <h3 id="10-责任链模式尝试"><a href="#10-责任链模式尝试" class="headerlink" title="#10 责任链模式尝试"></a>#10 责任链模式尝试</h3><p><img src="/notes/index/10-1.png" alt="图10-1"></p>
 <h3 id="11-spring配置方式的变更与DRY"><a href="#11-spring配置方式的变更与DRY" class="headerlink" title="#11 spring配置方式的变更与DRY"></a>#11 spring配置方式的变更与DRY</h3><p>Spring的配置信息由外部配置xml的方式改为内部注解配置的方式正是DRY原则的一种体现，原有的xml配置方式你需要将类的完全限定名等元信息重复的在XML里再写一份，而注解则不需要，因为类自己就是对象的元信息，自描述了，当然不需要外部描述了，这正是DRY的一种体现。</p>
