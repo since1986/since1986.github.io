@@ -101,14 +101,14 @@
 
 
   <meta name="description" content="刚刚在看spring-boot的源码，偶然发现了spring-boot中推断main()所在类名的处理方法，感觉很巧妙，记录一下。原理就是手工抛一个RuntimeException然后获得这个RuntimeException的StackTraceElement[]，迭代每个StackTraceElement从中找出methodName为main的那一个的className。 12345678910">
-<meta name="keywords" content="源码,spring-boot">
+<meta name="keywords" content="源码,spring,spring-boot">
 <meta property="og:type" content="article">
 <meta property="og:title" content="spring-boot中推断main方法所在类名的方法">
 <meta property="og:url" content="https://since1986.github.io/4efb37b0.html">
 <meta property="og:site_name" content="Since1986">
 <meta property="og:description" content="刚刚在看spring-boot的源码，偶然发现了spring-boot中推断main()所在类名的处理方法，感觉很巧妙，记录一下。原理就是手工抛一个RuntimeException然后获得这个RuntimeException的StackTraceElement[]，迭代每个StackTraceElement从中找出methodName为main的那一个的className。 12345678910">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-15T06:11:14.584Z">
+<meta property="og:updated_time" content="2019-10-09T08:17:57.520Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="spring-boot中推断main方法所在类名的方法">
 <meta name="twitter:description" content="刚刚在看spring-boot的源码，偶然发现了spring-boot中推断main()所在类名的处理方法，感觉很巧妙，记录一下。原理就是手工抛一个RuntimeException然后获得这个RuntimeException的StackTraceElement[]，迭代每个StackTraceElement从中找出methodName为main的那一个的className。 12345678910">
@@ -441,7 +441,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-08-15 14:11:14" itemprop="dateModified" datetime="2019-08-15T14:11:14+08:00">2019-08-15</time>
+                <time title="修改时间：2019-10-09 16:17:57" itemprop="dateModified" datetime="2019-10-09T16:17:57+08:00">2019-10-09</time>
               
             
           </span>
@@ -557,6 +557,8 @@
         <div class="post-tags">
           
             <a href="/tags/源码/" rel="tag"># 源码</a>
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
           
             <a href="/tags/spring-boot/" rel="tag"># spring-boot</a>
           
@@ -710,7 +712,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">23</span>
+                      
+                    
+                    <span class="site-state-item-count">24</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
