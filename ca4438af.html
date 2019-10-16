@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" href="/lib/fancybox/source/jquery.fancybox.css">
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.1.2">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.1.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.1.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.1.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.1.2" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.1.2',
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: true,
+    fancybox: true,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="前言基础知识。 正文设计理念 尽最大努力尽量避免坏情况发生：在 hash() 中用扰动函数力图将 hash 冲突降至最低 当坏情况不可避免地发生了，则尽量降低其带来的负面影响：hash 冲突产生了用槽位存储普通链表或红黑树型链表解决 特事特办：在 get 时先尝试匹配首节点，如果匹配直接返回，如果不匹配才走标准查找算法 快速失败  基本逻辑 利用数组 table 存储 Node，每个 table">
+<meta name="keywords" content="Java基础,源码">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HashMap源码分析">
+<meta property="og:url" content="https://since1986.github.io/ca4438af.html">
+<meta property="og:site_name" content="Since1986">
+<meta property="og:description" content="前言基础知识。 正文设计理念 尽最大努力尽量避免坏情况发生：在 hash() 中用扰动函数力图将 hash 冲突降至最低 当坏情况不可避免地发生了，则尽量降低其带来的负面影响：hash 冲突产生了用槽位存储普通链表或红黑树型链表解决 特事特办：在 get 时先尝试匹配首节点，如果匹配直接返回，如果不匹配才走标准查找算法 快速失败  基本逻辑 利用数组 table 存储 Node，每个 table">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-10-16T08:17:08.584Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HashMap源码分析">
+<meta name="twitter:description" content="前言基础知识。 正文设计理念 尽最大努力尽量避免坏情况发生：在 hash() 中用扰动函数力图将 hash 冲突降至最低 当坏情况不可避免地发生了，则尽量降低其带来的负面影响：hash 冲突产生了用槽位存储普通链表或红黑树型链表解决 特事特办：在 get 时先尝试匹配首节点，如果匹配直接返回，如果不匹配才走标准查找算法 快速失败  基本逻辑 利用数组 table 存储 Node，每个 table">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="https://since1986.github.io/ca4438af">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>HashMap源码分析 | Since1986</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Since1986</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-notes">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/notes/" rel="section"><i class="menu-item-icon fa fa-fw fa-sticky-note-o"></i> <br>notes</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+
+  
+
+  <a href="https://github.com/since1986" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewbox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a>
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://since1986.github.io/ca4438af.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="since1986">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar215x215.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Since1986">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">HashMap源码分析
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-16 16:12:03 / 修改时间：16:17:08" itemprop="dateCreated datePublished" datetime="2019-10-16T16:12:03+08:00">2019-10-16</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">40k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">36 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>基础知识。</p>
+<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><h3 id="设计理念"><a href="#设计理念" class="headerlink" title="设计理念"></a>设计理念</h3><ul>
+<li>尽最大努力尽量避免坏情况发生：在 hash() 中用扰动函数力图将 hash 冲突降至最低</li>
+<li>当坏情况不可避免地发生了，则尽量降低其带来的负面影响：hash 冲突产生了用槽位存储普通链表或红黑树型链表解决</li>
+<li>特事特办：在 get 时先尝试匹配首节点，如果匹配直接返回，如果不匹配才走标准查找算法</li>
+<li>快速失败</li>
+</ul>
+<h3 id="基本逻辑"><a href="#基本逻辑" class="headerlink" title="基本逻辑"></a>基本逻辑</h3><ul>
+<li>利用数组 table 存储 Node，每个 table 的槽位中的 Node 有可能是普通单向链表或者红黑树链表</li>
+<li>put(key, value) 时，对 key 求 hash 值，把求出的 hash &amp; (capacity - 1) 得出在 table 中的 index，当 index 对应table 槽位上无现有 Node 则直接用 key、value 创建 Node，若已有 Node存在（也就是hash冲突）则判断key是否相等，相等则更新，不相等则创建Node的后继节点，在创建后继节点时如果链长度到了树化阈值则将Node转化为红黑树链表；同时，如果 table 实际已占用槽位总数 &gt; capacity * loadFactor 则进行扩容</li>
+</ul>
+<h3 id="代码解读"><a href="#代码解读" class="headerlink" title="代码解读"></a>代码解读</h3><h4 id="常量"><a href="#常量" class="headerlink" title="常量"></a>常量</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 初始容量，也是构造器中没有明确指定容量时使用的缺省容量</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The default initial capacity - MUST be a power of two.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_INITIAL_CAPACITY = <span class="number">1</span> &lt;&lt; <span class="number">4</span>; <span class="comment">// aka 16  1 左移 4 位等效于 2 ^ 4 2的4次方等于16</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 容量上限，用于对构造器中传入容量作限制</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The maximum capacity, used if a higher value is implicitly specified</span></span><br><span class="line"><span class="comment"> * by either of the constructors with arguments.</span></span><br><span class="line"><span class="comment"> * MUST be a power of two &lt;= 1&lt;&lt;30.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MAXIMUM_CAPACITY = <span class="number">1</span> &lt;&lt; <span class="number">30</span>; <span class="comment">// 2 ^ 30</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 默认的“装载因子” 装载因子是用于控制是否扩容的标志，也就是当前条目数到了装载因子后就需要扩容了</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The load factor used when none specified in constructor.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">float</span> DEFAULT_LOAD_FACTOR = <span class="number">0.75f</span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 触发 “树化” 的阈值，树化是将每一个桶中的链表转为树，从而提升查找速度</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The bin count threshold for using a tree rather than list for a</span></span><br><span class="line"><span class="comment"> * bin.  Bins are converted to trees when adding an element to a</span></span><br><span class="line"><span class="comment"> * bin with at least this many nodes. The value must be greater</span></span><br><span class="line"><span class="comment"> * than 2 and should be at least 8 to mesh with assumptions in</span></span><br><span class="line"><span class="comment"> * tree removal about conversion back to plain bins upon</span></span><br><span class="line"><span class="comment"> * shrinkage.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TREEIFY_THRESHOLD = <span class="number">8</span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 树还原为链表的阈值，短链表比树更合适</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The bin count threshold for untreeifying a (split) bin during a</span></span><br><span class="line"><span class="comment"> * resize operation. Should be less than TREEIFY_THRESHOLD, and at</span></span><br><span class="line"><span class="comment"> * most 6 to mesh with shrinkage detection under removal.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> UNTREEIFY_THRESHOLD = <span class="number">6</span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 可以树化的一个条件：table的最小容量，也就是想要树化需要满足当前table大小大于MIN_TREEIFY_CAPACITY</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The smallest table capacity for which bins may be treeified.</span></span><br><span class="line"><span class="comment"> * (Otherwise the table is resized if too many nodes in a bin.)</span></span><br><span class="line"><span class="comment"> * Should be at least 4 * TREEIFY_THRESHOLD to avoid conflicts</span></span><br><span class="line"><span class="comment"> * between resizing and treeification thresholds.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MIN_TREEIFY_CAPACITY = <span class="number">64</span>;</span><br></pre></td></tr></table></figure>
+
+<h4 id="内部数据结构"><a href="#内部数据结构" class="headerlink" title="内部数据结构"></a>内部数据结构</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 基本的“节点”的定义</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Basic hash bin node, used for most entries.  (See below for</span></span><br><span class="line"><span class="comment"> * TreeNode subclass, and in LinkedHashMap for its Entry subclass.)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">Map</span>.<span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> hash;</span><br><span class="line">    <span class="keyword">final</span> K key;</span><br><span class="line">    V value;</span><br><span class="line">    Node&lt;K,V&gt; next; <span class="comment">// 下一节点，也就是说基本的节点是一个单向链表的结构</span></span><br><span class="line">    Node(<span class="keyword">int</span> hash, K key, V value, Node&lt;K,V&gt; next) &#123;</span><br><span class="line">        <span class="keyword">this</span>.hash = hash;</span><br><span class="line">        <span class="keyword">this</span>.key = key;</span><br><span class="line">        <span class="keyword">this</span>.value = value;</span><br><span class="line">        <span class="keyword">this</span>.next = next;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> K <span class="title">getKey</span><span class="params">()</span>        </span>&#123; <span class="keyword">return</span> key; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> V <span class="title">getValue</span><span class="params">()</span>      </span>&#123; <span class="keyword">return</span> value; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> key + <span class="string">"="</span> + value; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> Objects.hashCode(key) ^ Objects.hashCode(value);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 设置新的 value 并返回修改前的旧的 value</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> V <span class="title">setValue</span><span class="params">(V newValue)</span> </span>&#123;</span><br><span class="line">        V oldValue = value;</span><br><span class="line">        value = newValue;</span><br><span class="line">        <span class="keyword">return</span> oldValue;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// key 和 value 都相等才是 Node 相等</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (o == <span class="keyword">this</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        <span class="keyword">if</span> (o <span class="keyword">instanceof</span> Map.Entry) &#123;</span><br><span class="line">            Map.Entry&lt;?,?&gt; e = (Map.Entry&lt;?,?&gt;)o;</span><br><span class="line">            <span class="keyword">if</span> (Objects.equals(key, e.getKey()) &amp;&amp;</span><br><span class="line">                Objects.equals(value, e.getValue()))</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br><span class="line">380</span><br><span class="line">381</span><br><span class="line">382</span><br><span class="line">383</span><br><span class="line">384</span><br><span class="line">385</span><br><span class="line">386</span><br><span class="line">387</span><br><span class="line">388</span><br><span class="line">389</span><br><span class="line">390</span><br><span class="line">391</span><br><span class="line">392</span><br><span class="line">393</span><br><span class="line">394</span><br><span class="line">395</span><br><span class="line">396</span><br><span class="line">397</span><br><span class="line">398</span><br><span class="line">399</span><br><span class="line">400</span><br><span class="line">401</span><br><span class="line">402</span><br><span class="line">403</span><br><span class="line">404</span><br><span class="line">405</span><br><span class="line">406</span><br><span class="line">407</span><br><span class="line">408</span><br><span class="line">409</span><br><span class="line">410</span><br><span class="line">411</span><br><span class="line">412</span><br><span class="line">413</span><br><span class="line">414</span><br><span class="line">415</span><br><span class="line">416</span><br><span class="line">417</span><br><span class="line">418</span><br><span class="line">419</span><br><span class="line">420</span><br><span class="line">421</span><br><span class="line">422</span><br><span class="line">423</span><br><span class="line">424</span><br><span class="line">425</span><br><span class="line">426</span><br><span class="line">427</span><br><span class="line">428</span><br><span class="line">429</span><br><span class="line">430</span><br><span class="line">431</span><br><span class="line">432</span><br><span class="line">433</span><br><span class="line">434</span><br><span class="line">435</span><br><span class="line">436</span><br><span class="line">437</span><br><span class="line">438</span><br><span class="line">439</span><br><span class="line">440</span><br><span class="line">441</span><br><span class="line">442</span><br><span class="line">443</span><br><span class="line">444</span><br><span class="line">445</span><br><span class="line">446</span><br><span class="line">447</span><br><span class="line">448</span><br><span class="line">449</span><br><span class="line">450</span><br><span class="line">451</span><br><span class="line">452</span><br><span class="line">453</span><br><span class="line">454</span><br><span class="line">455</span><br><span class="line">456</span><br><span class="line">457</span><br><span class="line">458</span><br><span class="line">459</span><br><span class="line">460</span><br><span class="line">461</span><br><span class="line">462</span><br><span class="line">463</span><br><span class="line">464</span><br><span class="line">465</span><br><span class="line">466</span><br><span class="line">467</span><br><span class="line">468</span><br><span class="line">469</span><br><span class="line">470</span><br><span class="line">471</span><br><span class="line">472</span><br><span class="line">473</span><br><span class="line">474</span><br><span class="line">475</span><br><span class="line">476</span><br><span class="line">477</span><br><span class="line">478</span><br><span class="line">479</span><br><span class="line">480</span><br><span class="line">481</span><br><span class="line">482</span><br><span class="line">483</span><br><span class="line">484</span><br><span class="line">485</span><br><span class="line">486</span><br><span class="line">487</span><br><span class="line">488</span><br><span class="line">489</span><br><span class="line">490</span><br><span class="line">491</span><br><span class="line">492</span><br><span class="line">493</span><br><span class="line">494</span><br><span class="line">495</span><br><span class="line">496</span><br><span class="line">497</span><br><span class="line">498</span><br><span class="line">499</span><br><span class="line">500</span><br><span class="line">501</span><br><span class="line">502</span><br><span class="line">503</span><br><span class="line">504</span><br><span class="line">505</span><br><span class="line">506</span><br><span class="line">507</span><br><span class="line">508</span><br><span class="line">509</span><br><span class="line">510</span><br><span class="line">511</span><br><span class="line">512</span><br><span class="line">513</span><br><span class="line">514</span><br><span class="line">515</span><br><span class="line">516</span><br><span class="line">517</span><br><span class="line">518</span><br><span class="line">519</span><br><span class="line">520</span><br><span class="line">521</span><br><span class="line">522</span><br><span class="line">523</span><br><span class="line">524</span><br><span class="line">525</span><br><span class="line">526</span><br><span class="line">527</span><br><span class="line">528</span><br><span class="line">529</span><br><span class="line">530</span><br><span class="line">531</span><br><span class="line">532</span><br><span class="line">533</span><br><span class="line">534</span><br><span class="line">535</span><br><span class="line">536</span><br><span class="line">537</span><br><span class="line">538</span><br><span class="line">539</span><br><span class="line">540</span><br><span class="line">541</span><br><span class="line">542</span><br><span class="line">543</span><br><span class="line">544</span><br><span class="line">545</span><br><span class="line">546</span><br><span class="line">547</span><br><span class="line">548</span><br><span class="line">549</span><br><span class="line">550</span><br><span class="line">551</span><br><span class="line">552</span><br><span class="line">553</span><br><span class="line">554</span><br><span class="line">555</span><br><span class="line">556</span><br><span class="line">557</span><br><span class="line">558</span><br><span class="line">559</span><br><span class="line">560</span><br><span class="line">561</span><br><span class="line">562</span><br><span class="line">563</span><br><span class="line">564</span><br><span class="line">565</span><br><span class="line">566</span><br><span class="line">567</span><br><span class="line">568</span><br><span class="line">569</span><br><span class="line">570</span><br><span class="line">571</span><br><span class="line">572</span><br><span class="line">573</span><br><span class="line">574</span><br><span class="line">575</span><br><span class="line">576</span><br><span class="line">577</span><br><span class="line">578</span><br><span class="line">579</span><br><span class="line">580</span><br><span class="line">581</span><br><span class="line">582</span><br><span class="line">583</span><br><span class="line">584</span><br><span class="line">585</span><br><span class="line">586</span><br><span class="line">587</span><br><span class="line">588</span><br><span class="line">589</span><br><span class="line">590</span><br><span class="line">591</span><br><span class="line">592</span><br><span class="line">593</span><br><span class="line">594</span><br><span class="line">595</span><br><span class="line">596</span><br><span class="line">597</span><br><span class="line">598</span><br><span class="line">599</span><br><span class="line">600</span><br><span class="line">601</span><br><span class="line">602</span><br><span class="line">603</span><br><span class="line">604</span><br><span class="line">605</span><br><span class="line">606</span><br><span class="line">607</span><br><span class="line">608</span><br><span class="line">609</span><br><span class="line">610</span><br><span class="line">611</span><br><span class="line">612</span><br><span class="line">613</span><br><span class="line">614</span><br><span class="line">615</span><br><span class="line">616</span><br><span class="line">617</span><br><span class="line">618</span><br><span class="line">619</span><br><span class="line">620</span><br><span class="line">621</span><br><span class="line">622</span><br><span class="line">623</span><br><span class="line">624</span><br><span class="line">625</span><br><span class="line">626</span><br><span class="line">627</span><br><span class="line">628</span><br><span class="line">629</span><br><span class="line">630</span><br><span class="line">631</span><br><span class="line">632</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 基本节点的子类“树型节点”，注意此类未直接继承基本节点，而是继承了 LinkedHashMap.Entry 的，而 LinkedHashMap.Entry 是继承了基本节点的</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Entry for Tree bins. Extends LinkedHashMap.Entry (which in turn</span></span><br><span class="line"><span class="comment"> * extends Node) so can be used as extension of either regular or</span></span><br><span class="line"><span class="comment"> * linked node.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">TreeNode</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; <span class="keyword">extends</span> <span class="title">LinkedHashMap</span>.<span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line">    </span><br><span class="line">    TreeNode&lt;K,V&gt; parent;  <span class="comment">// red-black tree links</span></span><br><span class="line">    TreeNode&lt;K,V&gt; left;</span><br><span class="line">    TreeNode&lt;K,V&gt; right;</span><br><span class="line">    TreeNode&lt;K,V&gt; prev;    <span class="comment">// needed to unlink next upon deletion</span></span><br><span class="line">    <span class="keyword">boolean</span> red; <span class="comment">// 节点是否为红黑色节点，树节点为 红黑树 这种数据结构，红黑树相较一般的二叉树而言是比较平衡的，不会退化为链表而降低二分查找效率</span></span><br><span class="line">    </span><br><span class="line">    TreeNode(<span class="keyword">int</span> hash, K key, V val, Node&lt;K,V&gt; next) &#123;</span><br><span class="line">        <span class="keyword">super</span>(hash, key, val, next);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 获得树的根节点，算法很简单，就是死循环找父节点，直到父节点为空则说明此节点为空节点</span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns root of tree containing this node.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">final</span> TreeNode&lt;K,V&gt; <span class="title">root</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (TreeNode&lt;K,V&gt; r = <span class="keyword">this</span>, p;;) &#123;</span><br><span class="line">            <span class="keyword">if</span> ((p = r.parent) == <span class="keyword">null</span>)</span><br><span class="line">                <span class="keyword">return</span> r;</span><br><span class="line">            r = p;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 确保给定的节点 root 为table某个index位置的头号候选人</span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Ensures that the given root is the first node of its bin.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">static</span> &lt;K,V&gt; <span class="function"><span class="keyword">void</span> <span class="title">moveRootToFront</span><span class="params">(Node&lt;K,V&gt;[] tab, TreeNode&lt;K,V&gt; root)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> n; <span class="comment">// table 的大小</span></span><br><span class="line">        <span class="keyword">if</span> (root != <span class="keyword">null</span> &amp;&amp; tab != <span class="keyword">null</span> &amp;&amp; (n = tab.length) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">int</span> index = (n - <span class="number">1</span>) &amp; root.hash; <span class="comment">// 用掩码法(node.hash &amp; (table.length - 1))取得给定的根节点在 table 中应当对应的 index</span></span><br><span class="line">            </span><br><span class="line">            TreeNode&lt;K,V&gt; first = (TreeNode&lt;K,V&gt;)tab[index]; <span class="comment">// 取出 index 对应的实际节点，注意这里取得的有可能不是给定的节点，因为在hash冲突时，很多节点都被放在了这个index上，可以理解为这个index有多个候选人，有可能给定节点跑到了第二个或第三个等位置，也就是不是第一候选人</span></span><br><span class="line">            </span><br><span class="line">            <span class="keyword">if</span> (root != first) &#123; <span class="comment">// 如果实际节点不是给定的节点，也就是给定的节点并没有在当前index位置的第一位候选人</span></span><br><span class="line">                Node&lt;K,V&gt; rn; <span class="comment">// 当前给定节点的next</span></span><br><span class="line">                tab[index] = root; <span class="comment">// 将当前index的第一候选人设置为给定节点</span></span><br><span class="line">                TreeNode&lt;K,V&gt; rp = root.prev; <span class="comment">// 当前给定节点的prev</span></span><br><span class="line">                </span><br><span class="line">                <span class="comment">// 1.如果前给定节点的next不为空则将当前给定节点的next节点的prev设置为当前给定节点的prev</span></span><br><span class="line">                <span class="keyword">if</span> ((rn = root.next) != <span class="keyword">null</span>)</span><br><span class="line">                    ((TreeNode&lt;K,V&gt;)rn).prev = rp;</span><br><span class="line">                </span><br><span class="line">                <span class="comment">// 2.给定节点的prev不为空则将给定节点的prev节点的next节点设置为给定节点的next</span></span><br><span class="line">                <span class="keyword">if</span> (rp != <span class="keyword">null</span>)</span><br><span class="line">                    rp.next = rn;</span><br><span class="line">                </span><br><span class="line">                <span class="comment">// 以上的1和2这两步操作后，就将当前节点从链中切掉了</span></span><br><span class="line">                </span><br><span class="line">                <span class="comment">// 如果得到的实际first不为空则将给定节点设置为实际first的prev，并将给定节点的next设置为得到的实际first，最后再将给定节点的prev设置为空，这几步操作后给定节点就变成了头位候选人</span></span><br><span class="line">                <span class="keyword">if</span> (first != <span class="keyword">null</span>)</span><br><span class="line">                    first.prev = root;</span><br><span class="line">                root.next = first;</span><br><span class="line">                root.prev = <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="function"><span class="keyword">assert</span> <span class="title">checkInvariants</span><span class="params">(root)</span></span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 查找</span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Finds the node starting at root p with the given hash and key.</span></span><br><span class="line"><span class="comment">     * The kc argument caches comparableClassFor(key) upon first use</span></span><br><span class="line"><span class="comment">     * comparing keys.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">final</span> TreeNode&lt;K,V&gt; <span class="title">find</span><span class="params">(<span class="keyword">int</span> h, Object k, Class&lt;?&gt; kc)</span> </span>&#123;</span><br><span class="line">        TreeNode&lt;K,V&gt; p = <span class="keyword">this</span>;</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            <span class="keyword">int</span> ph, dir; K pk;</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 二分查找</span></span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 先用hash作为大小的依据进行查找</span></span><br><span class="line">            TreeNode&lt;K,V&gt; pl = p.left, pr = p.right, q;</span><br><span class="line">            <span class="keyword">if</span> ((ph = p.hash) &gt; h)</span><br><span class="line">                p = pl;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (ph &lt; h)</span><br><span class="line">                p = pr;</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 如果hash相等则以key作为大小依据进行查找</span></span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> ((pk = p.key) == k || (k != <span class="keyword">null</span> &amp;&amp; k.equals(pk)))</span><br><span class="line">                <span class="keyword">return</span> p;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (pl == <span class="keyword">null</span>)</span><br><span class="line">                p = pr;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (pr == <span class="keyword">null</span>)</span><br><span class="line">                p = pl;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> ((kc != <span class="keyword">null</span> ||</span><br><span class="line">                      (kc = comparableClassFor(k)) != <span class="keyword">null</span>) &amp;&amp;</span><br><span class="line">                     (dir = compareComparables(kc, k, pk)) != <span class="number">0</span>)</span><br><span class="line">                p = (dir &lt; <span class="number">0</span>) ? pl : pr;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> ((q = pr.find(h, k, kc)) != <span class="keyword">null</span>)</span><br><span class="line">                <span class="keyword">return</span> q;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                p = pl;</span><br><span class="line">        &#125; <span class="keyword">while</span> (p != <span class="keyword">null</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Calls find for root node.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">final</span> TreeNode&lt;K,V&gt; <span class="title">getTreeNode</span><span class="params">(<span class="keyword">int</span> h, Object k)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> ((parent != <span class="keyword">null</span>) ? root() : <span class="keyword">this</span>).find(h, k, <span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 用这个方法来比较两个对象，返回值要么为-1要么为1，不会为0，也就是只会大于或小于，不存在相等</span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Tie-breaking utility for ordering insertions when equal</span></span><br><span class="line"><span class="comment">     * hashCodes and non-comparable. We don't require a total</span></span><br><span class="line"><span class="comment">     * order, just a consistent insertion rule to maintain</span></span><br><span class="line"><span class="comment">     * equivalence across rebalancings. Tie-breaking further than</span></span><br><span class="line"><span class="comment">     * necessary simplifies testing a bit.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">tieBreakOrder</span><span class="params">(Object a, Object b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> d;</span><br><span class="line">        <span class="keyword">if</span> (a == <span class="keyword">null</span> || b == <span class="keyword">null</span> ||</span><br><span class="line">            (d = a.getClass().getName().</span><br><span class="line">             compareTo(b.getClass().getName())) == <span class="number">0</span>)</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 注意：等于被算做小于</span></span><br><span class="line">            d = (System.identityHashCode(a) &lt;= System.identityHashCode(b) ?</span><br><span class="line">                 -<span class="number">1</span> : <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> d;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 构造红黑树</span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Forms tree of the nodes linked from this node.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">treeify</span><span class="params">(Node&lt;K,V&gt;[] tab)</span> </span>&#123;</span><br><span class="line">        TreeNode&lt;K,V&gt; root = <span class="keyword">null</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (TreeNode&lt;K,V&gt; x = <span class="keyword">this</span>, next; x != <span class="keyword">null</span>; x = next) &#123;</span><br><span class="line">            next = (TreeNode&lt;K,V&gt;)x.next;</span><br><span class="line">            x.left = x.right = <span class="keyword">null</span>;</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 如果当前还没有根节点，则构造一个根节点</span></span><br><span class="line">            <span class="keyword">if</span> (root == <span class="keyword">null</span>) &#123;</span><br><span class="line">                x.parent = <span class="keyword">null</span>; <span class="comment">// 根节点无父结点</span></span><br><span class="line">                x.red = <span class="keyword">false</span>; <span class="comment">// 根节点恒为黑色</span></span><br><span class="line">                root = x;</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 如果当前已经有根节点了</span></span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                K k = x.key;</span><br><span class="line">                <span class="keyword">int</span> h = x.hash;</span><br><span class="line">                Class&lt;?&gt; kc = <span class="keyword">null</span>;</span><br><span class="line">                </span><br><span class="line">                <span class="keyword">for</span> (TreeNode&lt;K,V&gt; p = root;;) &#123;</span><br><span class="line">                    <span class="keyword">int</span> dir, ph;</span><br><span class="line">                    K pk = p.key;</span><br><span class="line">                    </span><br><span class="line">                    <span class="comment">// 先用hash作为大小依据</span></span><br><span class="line">                    <span class="keyword">if</span> ((ph = p.hash) &gt; h)</span><br><span class="line">                        dir = -<span class="number">1</span>;</span><br><span class="line">                    <span class="keyword">else</span> <span class="keyword">if</span> (ph &lt; h)</span><br><span class="line">                        dir = <span class="number">1</span>;</span><br><span class="line">                    </span><br><span class="line">                    <span class="comment">// 如果hash相等则用key作为大小依据</span></span><br><span class="line">                    <span class="keyword">else</span> <span class="keyword">if</span> ((kc == <span class="keyword">null</span> &amp;&amp;</span><br><span class="line">                              (kc = comparableClassFor(k)) == <span class="keyword">null</span>) ||</span><br><span class="line">                             (dir = compareComparables(kc, k, pk)) == <span class="number">0</span>)</span><br><span class="line">                        dir = tieBreakOrder(k, pk);</span><br><span class="line">                    </span><br><span class="line">                    TreeNode&lt;K,V&gt; xp = p;</span><br><span class="line">                    <span class="keyword">if</span> ((p = (dir &lt;= <span class="number">0</span>) ? p.left : p.right) == <span class="keyword">null</span>) &#123; <span class="comment">// 如果当前节点的子节点为空(通过上一步得出的dir来判断该比较左节点还是右节点)</span></span><br><span class="line">                        x.parent = xp;</span><br><span class="line">                        <span class="keyword">if</span> (dir &lt;= <span class="number">0</span>)</span><br><span class="line">                            xp.left = x;</span><br><span class="line">                        <span class="keyword">else</span></span><br><span class="line">                            xp.right = x;</span><br><span class="line">                        root = balanceInsertion(root, x); <span class="comment">// 重平衡以保证红黑树性质</span></span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        moveRootToFront(tab, root); <span class="comment">// 将根节点设置为table的某个槽的首位候选人</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Returns a list of non-TreeNodes replacing those linked from</span></span><br><span class="line"><span class="comment">     * this node.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">final</span> Node&lt;K,V&gt; <span class="title">untreeify</span><span class="params">(HashMap&lt;K,V&gt; map)</span> </span>&#123;</span><br><span class="line">        Node&lt;K,V&gt; hd = <span class="keyword">null</span>, tl = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">for</span> (Node&lt;K,V&gt; q = <span class="keyword">this</span>; q != <span class="keyword">null</span>; q = q.next) &#123;</span><br><span class="line">            Node&lt;K,V&gt; p = map.replacementNode(q, <span class="keyword">null</span>);</span><br><span class="line">            <span class="keyword">if</span> (tl == <span class="keyword">null</span>)</span><br><span class="line">                hd = p;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                tl.next = p;</span><br><span class="line">            tl = p;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> hd;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 设置key value</span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Tree version of putVal.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">final</span> TreeNode&lt;K,V&gt; <span class="title">putTreeVal</span><span class="params">(HashMap&lt;K,V&gt; map, Node&lt;K,V&gt;[] tab,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   <span class="keyword">int</span> h, K k, V v)</span> </span>&#123;</span><br><span class="line">        Class&lt;?&gt; kc = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">boolean</span> searched = <span class="keyword">false</span>;</span><br><span class="line">        TreeNode&lt;K,V&gt; root = (parent != <span class="keyword">null</span>) ? root() : <span class="keyword">this</span>;</span><br><span class="line">        <span class="keyword">for</span> (TreeNode&lt;K,V&gt; p = root;;) &#123;</span><br><span class="line">            <span class="keyword">int</span> dir, ph; K pk;</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 先找一遍(找的时候先按hash大小找，若hash相等则按key大小找)，如果已经存在则直接返回</span></span><br><span class="line">            <span class="keyword">if</span> ((ph = p.hash) &gt; h)</span><br><span class="line">                dir = -<span class="number">1</span>;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (ph &lt; h)</span><br><span class="line">                dir = <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> ((pk = p.key) == k || (k != <span class="keyword">null</span> &amp;&amp; k.equals(pk)))</span><br><span class="line">                <span class="keyword">return</span> p;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> ((kc == <span class="keyword">null</span> &amp;&amp;</span><br><span class="line">                      (kc = comparableClassFor(k)) == <span class="keyword">null</span>) ||</span><br><span class="line">                     (dir = compareComparables(kc, k, pk)) == <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (!searched) &#123;</span><br><span class="line">                    TreeNode&lt;K,V&gt; q, ch;</span><br><span class="line">                    searched = <span class="keyword">true</span>;</span><br><span class="line">                    <span class="keyword">if</span> (((ch = p.left) != <span class="keyword">null</span> &amp;&amp;</span><br><span class="line">                         (q = ch.find(h, k, kc)) != <span class="keyword">null</span>) ||</span><br><span class="line">                        ((ch = p.right) != <span class="keyword">null</span> &amp;&amp;</span><br><span class="line">                         (q = ch.find(h, k, kc)) != <span class="keyword">null</span>))</span><br><span class="line">                        <span class="keyword">return</span> q;</span><br><span class="line">                &#125;</span><br><span class="line">                dir = tieBreakOrder(k, pk);</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 若没找到则新建</span></span><br><span class="line">            TreeNode&lt;K,V&gt; xp = p;</span><br><span class="line">            <span class="keyword">if</span> ((p = (dir &lt;= <span class="number">0</span>) ? p.left : p.right) == <span class="keyword">null</span>) &#123; <span class="comment">// </span></span><br><span class="line">                Node&lt;K,V&gt; xpn = xp.next;</span><br><span class="line">                TreeNode&lt;K,V&gt; x = map.newTreeNode(h, k, v, xpn);</span><br><span class="line">                <span class="keyword">if</span> (dir &lt;= <span class="number">0</span>)</span><br><span class="line">                    xp.left = x;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                    xp.right = x;</span><br><span class="line">                xp.next = x;</span><br><span class="line">                x.parent = x.prev = xp;</span><br><span class="line">                <span class="keyword">if</span> (xpn != <span class="keyword">null</span>)</span><br><span class="line">                    ((TreeNode&lt;K,V&gt;)xpn).prev = x;</span><br><span class="line">                moveRootToFront(tab, balanceInsertion(root, x));</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 删除节点</span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Removes the given node, that must be present before this call.</span></span><br><span class="line"><span class="comment">     * This is messier than typical red-black deletion code because we</span></span><br><span class="line"><span class="comment">     * cannot swap the contents of an interior node with a leaf</span></span><br><span class="line"><span class="comment">     * successor that is pinned by "next" pointers that are accessible</span></span><br><span class="line"><span class="comment">     * independently during traversal. So instead we swap the tree</span></span><br><span class="line"><span class="comment">     * linkages. If the current tree appears to have too few nodes,</span></span><br><span class="line"><span class="comment">     * the bin is converted back to a plain bin. (The test triggers</span></span><br><span class="line"><span class="comment">     * somewhere between 2 and 6 nodes, depending on tree structure).</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">removeTreeNode</span><span class="params">(HashMap&lt;K,V&gt; map, Node&lt;K,V&gt;[] tab,</span></span></span><br><span class="line"><span class="function"><span class="params">                              <span class="keyword">boolean</span> movable)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> n;</span><br><span class="line">        <span class="keyword">if</span> (tab == <span class="keyword">null</span> || (n = tab.length) == <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">int</span> index = (n - <span class="number">1</span>) &amp; hash;</span><br><span class="line">        TreeNode&lt;K,V&gt; first = (TreeNode&lt;K,V&gt;)tab[index], root = first, rl;</span><br><span class="line">        TreeNode&lt;K,V&gt; succ = (TreeNode&lt;K,V&gt;)next, pred = prev;</span><br><span class="line">        <span class="keyword">if</span> (pred == <span class="keyword">null</span>)</span><br><span class="line">            tab[index] = first = succ;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            pred.next = succ;</span><br><span class="line">        <span class="keyword">if</span> (succ != <span class="keyword">null</span>)</span><br><span class="line">            succ.prev = pred;</span><br><span class="line">        <span class="keyword">if</span> (first == <span class="keyword">null</span>)</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">if</span> (root.parent != <span class="keyword">null</span>)</span><br><span class="line">            root = root.root();</span><br><span class="line">        <span class="keyword">if</span> (root == <span class="keyword">null</span></span><br><span class="line">            || (movable</span><br><span class="line">                &amp;&amp; (root.right == <span class="keyword">null</span></span><br><span class="line">                    || (rl = root.left) == <span class="keyword">null</span></span><br><span class="line">                    || rl.left == <span class="keyword">null</span>))) &#123;</span><br><span class="line">            tab[index] = first.untreeify(map);  <span class="comment">// too small</span></span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        TreeNode&lt;K,V&gt; p = <span class="keyword">this</span>, pl = left, pr = right, replacement;</span><br><span class="line">        <span class="keyword">if</span> (pl != <span class="keyword">null</span> &amp;&amp; pr != <span class="keyword">null</span>) &#123;</span><br><span class="line">            TreeNode&lt;K,V&gt; s = pr, sl;</span><br><span class="line">            <span class="keyword">while</span> ((sl = s.left) != <span class="keyword">null</span>) <span class="comment">// find successor</span></span><br><span class="line">                s = sl;</span><br><span class="line">            <span class="keyword">boolean</span> c = s.red; s.red = p.red; p.red = c; <span class="comment">// swap colors</span></span><br><span class="line">            TreeNode&lt;K,V&gt; sr = s.right;</span><br><span class="line">            TreeNode&lt;K,V&gt; pp = p.parent;</span><br><span class="line">            <span class="keyword">if</span> (s == pr) &#123; <span class="comment">// p was s's direct parent</span></span><br><span class="line">                p.parent = s;</span><br><span class="line">                s.right = p;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                TreeNode&lt;K,V&gt; sp = s.parent;</span><br><span class="line">                <span class="keyword">if</span> ((p.parent = sp) != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (s == sp.left)</span><br><span class="line">                        sp.left = p;</span><br><span class="line">                    <span class="keyword">else</span></span><br><span class="line">                        sp.right = p;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> ((s.right = pr) != <span class="keyword">null</span>)</span><br><span class="line">                    pr.parent = s;</span><br><span class="line">            &#125;</span><br><span class="line">            p.left = <span class="keyword">null</span>;</span><br><span class="line">            <span class="keyword">if</span> ((p.right = sr) != <span class="keyword">null</span>)</span><br><span class="line">                sr.parent = p;</span><br><span class="line">            <span class="keyword">if</span> ((s.left = pl) != <span class="keyword">null</span>)</span><br><span class="line">                pl.parent = s;</span><br><span class="line">            <span class="keyword">if</span> ((s.parent = pp) == <span class="keyword">null</span>)</span><br><span class="line">                root = s;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (p == pp.left)</span><br><span class="line">                pp.left = s;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                pp.right = s;</span><br><span class="line">            <span class="keyword">if</span> (sr != <span class="keyword">null</span>)</span><br><span class="line">                replacement = sr;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                replacement = p;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (pl != <span class="keyword">null</span>)</span><br><span class="line">            replacement = pl;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (pr != <span class="keyword">null</span>)</span><br><span class="line">            replacement = pr;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            replacement = p;</span><br><span class="line">        <span class="keyword">if</span> (replacement != p) &#123;</span><br><span class="line">            TreeNode&lt;K,V&gt; pp = replacement.parent = p.parent;</span><br><span class="line">            <span class="keyword">if</span> (pp == <span class="keyword">null</span>)</span><br><span class="line">                root = replacement;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (p == pp.left)</span><br><span class="line">                pp.left = replacement;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                pp.right = replacement;</span><br><span class="line">            p.left = p.right = p.parent = <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        TreeNode&lt;K,V&gt; r = p.red ? root : balanceDeletion(root, replacement);</span><br><span class="line">        <span class="keyword">if</span> (replacement == p) &#123;  <span class="comment">// detach</span></span><br><span class="line">            TreeNode&lt;K,V&gt; pp = p.parent;</span><br><span class="line">            p.parent = <span class="keyword">null</span>;</span><br><span class="line">            <span class="keyword">if</span> (pp != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (p == pp.left)</span><br><span class="line">                    pp.left = <span class="keyword">null</span>;</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (p == pp.right)</span><br><span class="line">                    pp.right = <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (movable)</span><br><span class="line">            moveRootToFront(tab, r);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 扩容时将把树拆成两棵，一棵放到新扩展出来的数组高位去，一棵留在原来的位置，划分的依据是扩展后新增的hash有效位是0还是1，拆分的时候会破坏树结构，所以先拆成两个链表再调用treeify来组装树。</span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Splits nodes in a tree bin into lower and upper tree bins,</span></span><br><span class="line"><span class="comment">     * or untreeifies if now too small. Called only from resize;</span></span><br><span class="line"><span class="comment">     * see above discussion about split bits and indices.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> map the map</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> tab the table for recording bin heads</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> index the index of the table being split</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> bit the bit of hash to split on</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">split</span><span class="params">(HashMap&lt;K,V&gt; map, Node&lt;K,V&gt;[] tab, <span class="keyword">int</span> index, <span class="keyword">int</span> bit)</span> </span>&#123;</span><br><span class="line">        TreeNode&lt;K,V&gt; b = <span class="keyword">this</span>;</span><br><span class="line">        <span class="comment">// Relink into lo and hi lists, preserving order</span></span><br><span class="line">        TreeNode&lt;K,V&gt; loHead = <span class="keyword">null</span>, loTail = <span class="keyword">null</span>;</span><br><span class="line">        TreeNode&lt;K,V&gt; hiHead = <span class="keyword">null</span>, hiTail = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">int</span> lc = <span class="number">0</span>, hc = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (TreeNode&lt;K,V&gt; e = b, next; e != <span class="keyword">null</span>; e = next) &#123;</span><br><span class="line">            next = (TreeNode&lt;K,V&gt;)e.next;</span><br><span class="line">            e.next = <span class="keyword">null</span>;</span><br><span class="line">            <span class="keyword">if</span> ((e.hash &amp; bit) == <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> ((e.prev = loTail) == <span class="keyword">null</span>)</span><br><span class="line">                    loHead = e;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                    loTail.next = e;</span><br><span class="line">                loTail = e;</span><br><span class="line">                ++lc;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> ((e.prev = hiTail) == <span class="keyword">null</span>)</span><br><span class="line">                    hiHead = e;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                    hiTail.next = e;</span><br><span class="line">                hiTail = e;</span><br><span class="line">                ++hc;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (loHead != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (lc &lt;= UNTREEIFY_THRESHOLD)</span><br><span class="line">                tab[index] = loHead.untreeify(map);</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                tab[index] = loHead;</span><br><span class="line">                <span class="keyword">if</span> (hiHead != <span class="keyword">null</span>) <span class="comment">// (else is already treeified)</span></span><br><span class="line">                    loHead.treeify(tab);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (hiHead != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (hc &lt;= UNTREEIFY_THRESHOLD)</span><br><span class="line">                tab[index + bit] = hiHead.untreeify(map);</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                tab[index + bit] = hiHead;</span><br><span class="line">                <span class="keyword">if</span> (loHead != <span class="keyword">null</span>)</span><br><span class="line">                    hiHead.treeify(tab);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* ------------------------------------------------------------ */</span></span><br><span class="line">    <span class="comment">// Red-black tree methods, all adapted from CLR</span></span><br><span class="line">    <span class="keyword">static</span> &lt;K,V&gt; <span class="function">TreeNode&lt;K,V&gt; <span class="title">rotateLeft</span><span class="params">(TreeNode&lt;K,V&gt; root,</span></span></span><br><span class="line"><span class="function"><span class="params">                                          TreeNode&lt;K,V&gt; p)</span> </span>&#123;</span><br><span class="line">        TreeNode&lt;K,V&gt; r, pp, rl;</span><br><span class="line">        <span class="keyword">if</span> (p != <span class="keyword">null</span> &amp;&amp; (r = p.right) != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> ((rl = p.right = r.left) != <span class="keyword">null</span>)</span><br><span class="line">                rl.parent = p;</span><br><span class="line">            <span class="keyword">if</span> ((pp = r.parent = p.parent) == <span class="keyword">null</span>)</span><br><span class="line">                (root = r).red = <span class="keyword">false</span>;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (pp.left == p)</span><br><span class="line">                pp.left = r;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                pp.right = r;</span><br><span class="line">            r.left = p;</span><br><span class="line">            p.parent = r;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> root;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">static</span> &lt;K,V&gt; <span class="function">TreeNode&lt;K,V&gt; <span class="title">rotateRight</span><span class="params">(TreeNode&lt;K,V&gt; root,</span></span></span><br><span class="line"><span class="function"><span class="params">                                           TreeNode&lt;K,V&gt; p)</span> </span>&#123;</span><br><span class="line">        TreeNode&lt;K,V&gt; l, pp, lr;</span><br><span class="line">        <span class="keyword">if</span> (p != <span class="keyword">null</span> &amp;&amp; (l = p.left) != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> ((lr = p.left = l.right) != <span class="keyword">null</span>)</span><br><span class="line">                lr.parent = p;</span><br><span class="line">            <span class="keyword">if</span> ((pp = l.parent = p.parent) == <span class="keyword">null</span>)</span><br><span class="line">                (root = l).red = <span class="keyword">false</span>;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (pp.right == p)</span><br><span class="line">                pp.right = l;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                pp.left = l;</span><br><span class="line">            l.right = p;</span><br><span class="line">            p.parent = l;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> root;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">static</span> &lt;K,V&gt; <span class="function">TreeNode&lt;K,V&gt; <span class="title">balanceInsertion</span><span class="params">(TreeNode&lt;K,V&gt; root,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                TreeNode&lt;K,V&gt; x)</span> </span>&#123;</span><br><span class="line">        x.red = <span class="keyword">true</span>;</span><br><span class="line">        <span class="keyword">for</span> (TreeNode&lt;K,V&gt; xp, xpp, xppl, xppr;;) &#123;</span><br><span class="line">            <span class="keyword">if</span> ((xp = x.parent) == <span class="keyword">null</span>) &#123;</span><br><span class="line">                x.red = <span class="keyword">false</span>;</span><br><span class="line">                <span class="keyword">return</span> x;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (!xp.red || (xpp = xp.parent) == <span class="keyword">null</span>)</span><br><span class="line">                <span class="keyword">return</span> root;</span><br><span class="line">            <span class="keyword">if</span> (xp == (xppl = xpp.left)) &#123;</span><br><span class="line">                <span class="keyword">if</span> ((xppr = xpp.right) != <span class="keyword">null</span> &amp;&amp; xppr.red) &#123;</span><br><span class="line">                    xppr.red = <span class="keyword">false</span>;</span><br><span class="line">                    xp.red = <span class="keyword">false</span>;</span><br><span class="line">                    xpp.red = <span class="keyword">true</span>;</span><br><span class="line">                    x = xpp;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">if</span> (x == xp.right) &#123;</span><br><span class="line">                        root = rotateLeft(root, x = xp);</span><br><span class="line">                        xpp = (xp = x.parent) == <span class="keyword">null</span> ? <span class="keyword">null</span> : xp.parent;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">if</span> (xp != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        xp.red = <span class="keyword">false</span>;</span><br><span class="line">                        <span class="keyword">if</span> (xpp != <span class="keyword">null</span>) &#123;</span><br><span class="line">                            xpp.red = <span class="keyword">true</span>;</span><br><span class="line">                            root = rotateRight(root, xpp);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (xppl != <span class="keyword">null</span> &amp;&amp; xppl.red) &#123;</span><br><span class="line">                    xppl.red = <span class="keyword">false</span>;</span><br><span class="line">                    xp.red = <span class="keyword">false</span>;</span><br><span class="line">                    xpp.red = <span class="keyword">true</span>;</span><br><span class="line">                    x = xpp;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="keyword">if</span> (x == xp.left) &#123;</span><br><span class="line">                        root = rotateRight(root, x = xp);</span><br><span class="line">                        xpp = (xp = x.parent) == <span class="keyword">null</span> ? <span class="keyword">null</span> : xp.parent;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">if</span> (xp != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        xp.red = <span class="keyword">false</span>;</span><br><span class="line">                        <span class="keyword">if</span> (xpp != <span class="keyword">null</span>) &#123;</span><br><span class="line">                            xpp.red = <span class="keyword">true</span>;</span><br><span class="line">                            root = rotateLeft(root, xpp);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">static</span> &lt;K,V&gt; <span class="function">TreeNode&lt;K,V&gt; <span class="title">balanceDeletion</span><span class="params">(TreeNode&lt;K,V&gt; root,</span></span></span><br><span class="line"><span class="function"><span class="params">                                               TreeNode&lt;K,V&gt; x)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (TreeNode&lt;K,V&gt; xp, xpl, xpr;;) &#123;</span><br><span class="line">            <span class="keyword">if</span> (x == <span class="keyword">null</span> || x == root)</span><br><span class="line">                <span class="keyword">return</span> root;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> ((xp = x.parent) == <span class="keyword">null</span>) &#123;</span><br><span class="line">                x.red = <span class="keyword">false</span>;</span><br><span class="line">                <span class="keyword">return</span> x;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (x.red) &#123;</span><br><span class="line">                x.red = <span class="keyword">false</span>;</span><br><span class="line">                <span class="keyword">return</span> root;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> ((xpl = xp.left) == x) &#123;</span><br><span class="line">                <span class="keyword">if</span> ((xpr = xp.right) != <span class="keyword">null</span> &amp;&amp; xpr.red) &#123;</span><br><span class="line">                    xpr.red = <span class="keyword">false</span>;</span><br><span class="line">                    xp.red = <span class="keyword">true</span>;</span><br><span class="line">                    root = rotateLeft(root, xp);</span><br><span class="line">                    xpr = (xp = x.parent) == <span class="keyword">null</span> ? <span class="keyword">null</span> : xp.right;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (xpr == <span class="keyword">null</span>)</span><br><span class="line">                    x = xp;</span><br><span class="line">                <span class="keyword">else</span> &#123;</span><br><span class="line">                    TreeNode&lt;K,V&gt; sl = xpr.left, sr = xpr.right;</span><br><span class="line">                    <span class="keyword">if</span> ((sr == <span class="keyword">null</span> || !sr.red) &amp;&amp;</span><br><span class="line">                        (sl == <span class="keyword">null</span> || !sl.red)) &#123;</span><br><span class="line">                        xpr.red = <span class="keyword">true</span>;</span><br><span class="line">                        x = xp;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">else</span> &#123;</span><br><span class="line">                        <span class="keyword">if</span> (sr == <span class="keyword">null</span> || !sr.red) &#123;</span><br><span class="line">                            <span class="keyword">if</span> (sl != <span class="keyword">null</span>)</span><br><span class="line">                                sl.red = <span class="keyword">false</span>;</span><br><span class="line">                            xpr.red = <span class="keyword">true</span>;</span><br><span class="line">                            root = rotateRight(root, xpr);</span><br><span class="line">                            xpr = (xp = x.parent) == <span class="keyword">null</span> ?</span><br><span class="line">                                <span class="keyword">null</span> : xp.right;</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">if</span> (xpr != <span class="keyword">null</span>) &#123;</span><br><span class="line">                            xpr.red = (xp == <span class="keyword">null</span>) ? <span class="keyword">false</span> : xp.red;</span><br><span class="line">                            <span class="keyword">if</span> ((sr = xpr.right) != <span class="keyword">null</span>)</span><br><span class="line">                                sr.red = <span class="keyword">false</span>;</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">if</span> (xp != <span class="keyword">null</span>) &#123;</span><br><span class="line">                            xp.red = <span class="keyword">false</span>;</span><br><span class="line">                            root = rotateLeft(root, xp);</span><br><span class="line">                        &#125;</span><br><span class="line">                        x = root;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123; <span class="comment">// symmetric</span></span><br><span class="line">                <span class="keyword">if</span> (xpl != <span class="keyword">null</span> &amp;&amp; xpl.red) &#123;</span><br><span class="line">                    xpl.red = <span class="keyword">false</span>;</span><br><span class="line">                    xp.red = <span class="keyword">true</span>;</span><br><span class="line">                    root = rotateRight(root, xp);</span><br><span class="line">                    xpl = (xp = x.parent) == <span class="keyword">null</span> ? <span class="keyword">null</span> : xp.left;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (xpl == <span class="keyword">null</span>)</span><br><span class="line">                    x = xp;</span><br><span class="line">                <span class="keyword">else</span> &#123;</span><br><span class="line">                    TreeNode&lt;K,V&gt; sl = xpl.left, sr = xpl.right;</span><br><span class="line">                    <span class="keyword">if</span> ((sl == <span class="keyword">null</span> || !sl.red) &amp;&amp;</span><br><span class="line">                        (sr == <span class="keyword">null</span> || !sr.red)) &#123;</span><br><span class="line">                        xpl.red = <span class="keyword">true</span>;</span><br><span class="line">                        x = xp;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">else</span> &#123;</span><br><span class="line">                        <span class="keyword">if</span> (sl == <span class="keyword">null</span> || !sl.red) &#123;</span><br><span class="line">                            <span class="keyword">if</span> (sr != <span class="keyword">null</span>)</span><br><span class="line">                                sr.red = <span class="keyword">false</span>;</span><br><span class="line">                            xpl.red = <span class="keyword">true</span>;</span><br><span class="line">                            root = rotateLeft(root, xpl);</span><br><span class="line">                            xpl = (xp = x.parent) == <span class="keyword">null</span> ?</span><br><span class="line">                                <span class="keyword">null</span> : xp.left;</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">if</span> (xpl != <span class="keyword">null</span>) &#123;</span><br><span class="line">                            xpl.red = (xp == <span class="keyword">null</span>) ? <span class="keyword">false</span> : xp.red;</span><br><span class="line">                            <span class="keyword">if</span> ((sl = xpl.left) != <span class="keyword">null</span>)</span><br><span class="line">                                sl.red = <span class="keyword">false</span>;</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">if</span> (xp != <span class="keyword">null</span>) &#123;</span><br><span class="line">                            xp.red = <span class="keyword">false</span>;</span><br><span class="line">                            root = rotateRight(root, xp);</span><br><span class="line">                        &#125;</span><br><span class="line">                        x = root;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Recursive invariant check</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">static</span> &lt;K,V&gt; <span class="function"><span class="keyword">boolean</span> <span class="title">checkInvariants</span><span class="params">(TreeNode&lt;K,V&gt; t)</span> </span>&#123;</span><br><span class="line">        TreeNode&lt;K,V&gt; tp = t.parent, tl = t.left, tr = t.right,</span><br><span class="line">            tb = t.prev, tn = (TreeNode&lt;K,V&gt;)t.next;</span><br><span class="line">        <span class="keyword">if</span> (tb != <span class="keyword">null</span> &amp;&amp; tb.next != t)</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (tn != <span class="keyword">null</span> &amp;&amp; tn.prev != t)</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (tp != <span class="keyword">null</span> &amp;&amp; t != tp.left &amp;&amp; t != tp.right)</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (tl != <span class="keyword">null</span> &amp;&amp; (tl.parent != t || tl.hash &gt; t.hash))</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (tr != <span class="keyword">null</span> &amp;&amp; (tr.parent != t || tr.hash &lt; t.hash))</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (t.red &amp;&amp; tl != <span class="keyword">null</span> &amp;&amp; tl.red &amp;&amp; tr != <span class="keyword">null</span> &amp;&amp; tr.red)</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (tl != <span class="keyword">null</span> &amp;&amp; !checkInvariants(tl))</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (tr != <span class="keyword">null</span> &amp;&amp; !checkInvariants(tr))</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="内部工具方法"><a href="#内部工具方法" class="headerlink" title="内部工具方法"></a>内部工具方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 之所以要将低位和高位做异或是为了将高位的bit混合到低位去，从而达到低位的值同时依赖于高位比特和低位比特的效果，之所以要这样是因为hash操作最后有一步掩码操作，掩码操作会将高位忽略，这样如果只依赖低位比特的话会造成大量值是相同的，也就是大概率hash冲突，而要在掩码操作之前把高位比特混合入低位的化即使抛弃了高位比特也就无所谓了，因为他已经和低位比特融合了</span></span><br><span class="line"><span class="comment">// https://www.zhihu.com/question/20733617</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Computes key.hashCode() and spreads (XORs) higher bits of hash</span></span><br><span class="line"><span class="comment"> * to lower.  Because the table uses power-of-two masking, sets of</span></span><br><span class="line"><span class="comment"> * hashes that vary only in bits above the current mask will</span></span><br><span class="line"><span class="comment"> * always collide. (Among known examples are sets of Float keys</span></span><br><span class="line"><span class="comment"> * holding consecutive whole numbers in small tables.)  So we</span></span><br><span class="line"><span class="comment"> * apply a transform that spreads the impact of higher bits</span></span><br><span class="line"><span class="comment"> * downward. There is a tradeoff between speed, utility, and</span></span><br><span class="line"><span class="comment"> * quality of bit-spreading. Because many common sets of hashes</span></span><br><span class="line"><span class="comment"> * are already reasonably distributed (so don't benefit from</span></span><br><span class="line"><span class="comment"> * spreading), and because we use trees to handle large sets of</span></span><br><span class="line"><span class="comment"> * collisions in bins, we just XOR some shifted bits in the</span></span><br><span class="line"><span class="comment"> * cheapest possible way to reduce systematic lossage, as well as</span></span><br><span class="line"><span class="comment"> * to incorporate impact of the highest bits that would otherwise</span></span><br><span class="line"><span class="comment"> * never be used in index calculations because of table bounds.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">hash</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> h;</span><br><span class="line">    <span class="keyword">return</span> (key == <span class="keyword">null</span>) ? <span class="number">0</span> : (h = key.hashCode()) ^ (h &gt;&gt;&gt; <span class="number">16</span>); <span class="comment">// </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">先来分析有关n位操作部分：先来假设n的二进制为01xxx...xxx。接着</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">对n右移1位：001xx...xxx，再位或：011xx...xxx</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">对n右移2为：00011...xxx，再位或：01111...xxx</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">此时前面已经有四个1了，再右移4位且位或可得8个1</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">同理，有8个1，右移8位肯定会让后八位也为1。</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">综上可得，该算法让最高位的1后面的位全变为1。</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">最后再让结果n+1，即得到了2的整数次幂的值了。</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">现在回来看看第一条语句：</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">int n = cap - 1;</span></span><br><span class="line"><span class="comment">让cap-1再赋值给n的目的是另找到的目标值大于或等于原值。例如二进制1000，十进制数值为8。如果不对它减1而直接操作，将得到答案10000，即16。显然不是结果。减1后二进制为111，再进行操作则会得到原来的数值1000，即8。</span></span><br><span class="line"><span class="comment">https://www.cnblogs.com/loading4/p/6239441.html</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Returns a power of two size for the given target capacity.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">tableSizeFor</span><span class="params">(<span class="keyword">int</span> cap)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n = cap - <span class="number">1</span>;</span><br><span class="line">    n |= n &gt;&gt;&gt; <span class="number">1</span>; <span class="comment">// 会在最高位的 1 挨着的后面再多出一个 1 前提是最高位是第2位以上的位，要最高位就是第一位的化后边多出的1会被右移操作舍弃</span></span><br><span class="line">    n |= n &gt;&gt;&gt; <span class="number">2</span>; <span class="comment">// 会在上一步生成的最高位两个连续的 1 （假如满足条件未被右移舍弃的话）挨着的后面再多两个连续的 1 现在变为最高位四个连续的 1 前提是最高位是第4位以上的位，要最最高位是第四位之前，那么后边多出的1会被右移操作舍弃</span></span><br><span class="line">    n |= n &gt;&gt;&gt; <span class="number">4</span>; <span class="comment">// 会在上一步生成的最高位四个连续的 1 （假如满足条件未被右移舍弃的话）挨着的后面再多四个连续的 1 现在变为最高位八个连续的</span></span><br><span class="line">    n |= n &gt;&gt;&gt; <span class="number">8</span>; <span class="comment">// 依此类推</span></span><br><span class="line">    n |= n &gt;&gt;&gt; <span class="number">16</span>; <span class="comment">// 依此类推 最终保证了最高位 1 之后必然全是 1</span></span><br><span class="line">    <span class="keyword">return</span> (n &lt; <span class="number">0</span>) ? <span class="number">1</span> : (n &gt;= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + <span class="number">1</span>; <span class="comment">// 注意 n + 1 操作：由于现在最高位之后已经全是 1 了，再加一个 1 的后果就是最高位之前那一位变成1，而从最高位开始全变为 0 这样的二进制形式必然是 2 ^ n 的形式</span></span><br><span class="line">    <span class="comment">// 再注意 n 是当前容量 - 1，而经过上面操作后等于得到的数是最接近当前容量的 2 ^ n 的值</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 每个槽位存储节点链表（或树）的首节点</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The table, initialized on first use, and resized as</span></span><br><span class="line"><span class="comment"> * necessary. When allocated, length is always a power of two.</span></span><br><span class="line"><span class="comment"> * (We also tolerate length zero in some operations to allow</span></span><br><span class="line"><span class="comment"> * bootstrapping mechanics that are currently not needed.)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">transient</span> Node&lt;K,V&gt;[] table;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Holds cached entrySet(). Note that AbstractMap fields are used</span></span><br><span class="line"><span class="comment"> * for keySet() and values().</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">transient</span> Set&lt;Map.Entry&lt;K,V&gt;&gt; entrySet;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 实际大小</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The number of key-value mappings contained in this map.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">transient</span> <span class="keyword">int</span> size;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用于控制迭代器快速失败行为的计数量</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The number of times this HashMap has been structurally modified</span></span><br><span class="line"><span class="comment"> * Structural modifications are those that change the number of mappings in</span></span><br><span class="line"><span class="comment"> * the HashMap or otherwise modify its internal structure (e.g.,</span></span><br><span class="line"><span class="comment"> * rehash).  This field is used to make iterators on Collection-views of</span></span><br><span class="line"><span class="comment"> * the HashMap fail-fast.  (See ConcurrentModificationException).</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">transient</span> <span class="keyword">int</span> modCount;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 需要扩容的大小阈值（容量 * 装载因子）</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The next size value at which to resize (capacity * load factor).</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@serial</span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="comment">// (The javadoc description is true upon serialization.</span></span><br><span class="line"><span class="comment">// Additionally, if the table array has not been allocated, this</span></span><br><span class="line"><span class="comment">// field holds the initial array capacity, or zero signifying</span></span><br><span class="line"><span class="comment">// DEFAULT_INITIAL_CAPACITY.)</span></span><br><span class="line"><span class="keyword">int</span> threshold;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 装载因子</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The load factor for the hash table.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@serial</span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">final</span> <span class="keyword">float</span> loadFactor;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// get</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Implements Map.get and related methods.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> hash hash for key</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> key the key</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> the node, or null if none</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">final</span> Node&lt;K,V&gt; <span class="title">getNode</span><span class="params">(<span class="keyword">int</span> hash, Object key)</span> </span>&#123;</span><br><span class="line">    Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; first, e; <span class="keyword">int</span> n; K k;</span><br><span class="line">    <span class="keyword">if</span> ((tab = table) != <span class="keyword">null</span> &amp;&amp; (n = tab.length) &gt; <span class="number">0</span> &amp;&amp;</span><br><span class="line">        (first = tab[(n - <span class="number">1</span>) &amp; hash]) != <span class="keyword">null</span>) &#123;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 先看一下 key 对应的 table 某一槽位上的首选候选人，这样如果首位就是要找的就不用找其他人了，消除了找其他人的成本</span></span><br><span class="line">        <span class="keyword">if</span> (first.hash == hash &amp;&amp; <span class="comment">// always check first node</span></span><br><span class="line">            ((k = first.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k)))) <span class="comment">// hash 相等且 key 相等则说明首位候选人就是想要找的，直接返回</span></span><br><span class="line">            <span class="keyword">return</span> first;</span><br><span class="line">        <span class="comment">// 如果首位候选人不是要找的</span></span><br><span class="line">        <span class="keyword">if</span> ((e = first.next) != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 如果槽位上首节点是树型节点就执行树形节点的查找</span></span><br><span class="line">            <span class="keyword">if</span> (first <span class="keyword">instanceof</span> TreeNode)</span><br><span class="line">                <span class="keyword">return</span> ((TreeNode&lt;K,V&gt;)first).getTreeNode(hash, key);</span><br><span class="line">            <span class="comment">// 否则就执行普通链表型节点的查找（也就是从头迭代到直到为止）</span></span><br><span class="line">            <span class="keyword">do</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (e.hash == hash &amp;&amp;</span><br><span class="line">                    ((k = e.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">                    <span class="keyword">return</span> e;</span><br><span class="line">            &#125; <span class="keyword">while</span> ((e = e.next) != <span class="keyword">null</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// put</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Implements Map.put and related methods.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> hash hash for key</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> key the key</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> value the value to put</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> onlyIfAbsent if true, don't change existing value</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> evict if false, the table is in creation mode.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> previous value, or null if none</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">final</span> V <span class="title">putVal</span><span class="params">(<span class="keyword">int</span> hash, K key, V value, <span class="keyword">boolean</span> onlyIfAbsent,</span></span></span><br><span class="line"><span class="function"><span class="params">               <span class="keyword">boolean</span> evict)</span> </span>&#123;</span><br><span class="line">    Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; p; <span class="keyword">int</span> n, i;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// table 如果为空，则立刻进行一次扩容</span></span><br><span class="line">    <span class="keyword">if</span> ((tab = table) == <span class="keyword">null</span> || (n = tab.length) == <span class="number">0</span>)</span><br><span class="line">        n = (tab = resize()).length;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 如果当前槽位上没有任何候选人，也就是当前没有hash冲突产生，则直接在当前槽位放上一个新建的候选人</span></span><br><span class="line">    <span class="keyword">if</span> ((p = tab[i = (n - <span class="number">1</span>) &amp; hash]) == <span class="keyword">null</span>)</span><br><span class="line">        tab[i] = newNode(hash, key, value, <span class="keyword">null</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 如果当前槽位已经存在候选人，也就是存在hash冲突，则</span></span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        Node&lt;K,V&gt; e; K k;</span><br><span class="line">        <span class="comment">// 如果当前槽位上候选人（也就是链表或树链表的首节点）就是要找的，也就是hash和key都相等</span></span><br><span class="line">        <span class="keyword">if</span> (p.hash == hash &amp;&amp;</span><br><span class="line">            ((k = p.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">            e = p;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 如果不是要找的，同时候选人是树型链表节点那么就走树型节点的put</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (p <span class="keyword">instanceof</span> TreeNode)</span><br><span class="line">            e = ((TreeNode&lt;K,V&gt;)p).putTreeVal(<span class="keyword">this</span>, tab, hash, key, value);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 如果不是要找的，同时候选人是普通链表节点，那么就从候选人开始向后迭代链表</span></span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> binCount = <span class="number">0</span>; ; ++binCount) &#123;</span><br><span class="line">                <span class="keyword">if</span> ((e = p.next) == <span class="keyword">null</span>) &#123; <span class="comment">// 如果当前迭代的元素后边没有更多节点了，就把当前给定的key value构造为节点挂到候选人后边</span></span><br><span class="line">                    p.next = newNode(hash, key, value, <span class="keyword">null</span>);</span><br><span class="line">                    <span class="keyword">if</span> (binCount &gt;= TREEIFY_THRESHOLD - <span class="number">1</span>) <span class="comment">// -1 for 1st</span></span><br><span class="line">                        treeifyBin(tab, hash); <span class="comment">// 如果当前迭代的元素数量（也就是槽位上候选人链的长度）已经到了树化阈值，则进行树化</span></span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (e.hash == hash &amp;&amp;</span><br><span class="line">                    ((k = e.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">                    <span class="keyword">break</span>; <span class="comment">// 如果发现迭代的当前条目就是要找的，则直接返回</span></span><br><span class="line">                </span><br><span class="line">                <span class="comment">// 进入下次迭代</span></span><br><span class="line">                p = e;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 如果在上边迭代完成后发现了候选人则更新候选人的value为指定的value</span></span><br><span class="line">        <span class="keyword">if</span> (e != <span class="keyword">null</span>) &#123; <span class="comment">// existing mapping for key</span></span><br><span class="line">            V oldValue = e.value;</span><br><span class="line">            <span class="keyword">if</span> (!onlyIfAbsent || oldValue == <span class="keyword">null</span>)</span><br><span class="line">                e.value = value;</span><br><span class="line">            afterNodeAccess(e);</span><br><span class="line">            <span class="keyword">return</span> oldValue;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">     </span><br><span class="line">    ++modCount;</span><br><span class="line">    <span class="keyword">if</span> (++size &gt; threshold) <span class="comment">// 如果当前table中已被占用的槽位总数超过了需要扩容的阈值则进行扩容</span></span><br><span class="line">        resize();</span><br><span class="line">    afterNodeInsertion(evict); <span class="comment">// 调用提供给子类实现的插入节点完成后回调</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 扩容操作</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Initializes or doubles table size.  If null, allocates in</span></span><br><span class="line"><span class="comment"> * accord with initial capacity target held in field threshold.</span></span><br><span class="line"><span class="comment"> * Otherwise, because we are using power-of-two expansion, the</span></span><br><span class="line"><span class="comment"> * elements from each bin must either stay at same index, or move</span></span><br><span class="line"><span class="comment"> * with a power of two offset in the new table.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> the table</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">final</span> Node&lt;K,V&gt;[] resize() &#123;</span><br><span class="line">    Node&lt;K,V&gt;[] oldTab = table;</span><br><span class="line">    <span class="keyword">int</span> oldCap = (oldTab == <span class="keyword">null</span>) ? <span class="number">0</span> : oldTab.length;</span><br><span class="line">    <span class="keyword">int</span> oldThr = threshold;</span><br><span class="line">    <span class="keyword">int</span> newCap, newThr = <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 如果旧容量大于0</span></span><br><span class="line">    <span class="keyword">if</span> (oldCap &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 如果旧容量超阈值旧设为阈值</span></span><br><span class="line">        <span class="keyword">if</span> (oldCap &gt;= MAXIMUM_CAPACITY) &#123;</span><br><span class="line">            threshold = Integer.MAX_VALUE;</span><br><span class="line">            <span class="keyword">return</span> oldTab;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 否则检查旧容量*2是否在缺省容量和最大容量阈值之间</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> ((newCap = oldCap &lt;&lt; <span class="number">1</span>) &lt; MAXIMUM_CAPACITY &amp;&amp;</span><br><span class="line">                 oldCap &gt;= DEFAULT_INITIAL_CAPACITY)</span><br><span class="line">            newThr = oldThr &lt;&lt; <span class="number">1</span>; <span class="comment">// double threshold // 如果是则 新容量设置为旧容量的2倍（右移1位也就是乘2）</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (oldThr &gt; <span class="number">0</span>) <span class="comment">// initial capacity was placed in threshold</span></span><br><span class="line">        newCap = oldThr;</span><br><span class="line">    <span class="keyword">else</span> &#123;               <span class="comment">// zero initial threshold signifies using defaul</span></span><br><span class="line">        newCap = DEFAULT_INITIAL_CAPACITY;</span><br><span class="line">        newThr = (<span class="keyword">int</span>)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (newThr == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">float</span> ft = (<span class="keyword">float</span>)newCap * loadFactor;</span><br><span class="line">        newThr = (newCap &lt; MAXIMUM_CAPACITY &amp;&amp; ft &lt; (<span class="keyword">float</span>)MAXIMUM_CAPACI</span><br><span class="line">                  (<span class="keyword">int</span>)ft : Integer.MAX_VALUE);</span><br><span class="line">    &#125;</span><br><span class="line">    threshold = newThr;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(&#123;<span class="string">"rawtypes"</span>,<span class="string">"unchecked"</span>&#125;)</span><br><span class="line">    Node&lt;K,V&gt;[] newTab = (Node&lt;K,V&gt;[])<span class="keyword">new</span> Node[newCap];</span><br><span class="line">    table = newTab;</span><br><span class="line">    <span class="keyword">if</span> (oldTab != <span class="keyword">null</span>) &#123;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 迭代旧的table</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; oldCap; ++j) &#123;</span><br><span class="line">            Node&lt;K,V&gt; e;</span><br><span class="line">            <span class="keyword">if</span> ((e = oldTab[j]) != <span class="keyword">null</span>) &#123;</span><br><span class="line">                oldTab[j] = <span class="keyword">null</span>; <span class="comment">// 将旧table对应槽位置空，帮助GC？</span></span><br><span class="line">                </span><br><span class="line">                <span class="comment">// 如果该槽位只有一个候选人</span></span><br><span class="line">                <span class="keyword">if</span> (e.next == <span class="keyword">null</span>)</span><br><span class="line">                    newTab[e.hash &amp; (newCap - <span class="number">1</span>)] = e; <span class="comment">// 就直接从新让候选人hash和新table容量做掩码操作落到新的槽位</span></span><br><span class="line">                </span><br><span class="line">                <span class="comment">// 如果该槽位不止一个候选人（也就是存在链表结构或树链表结构）</span></span><br><span class="line">                <span class="comment">// 如果候选人是树链表结构</span></span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (e <span class="keyword">instanceof</span> TreeNode)</span><br><span class="line">                    ((TreeNode&lt;K,V&gt;)e).split(<span class="keyword">this</span>, newTab, j, oldCap); <span class="comment">// 则做树拆分操作</span></span><br><span class="line">                </span><br><span class="line">                <span class="comment">// 如果候选人是普通链表结构</span></span><br><span class="line">                <span class="keyword">else</span> &#123; <span class="comment">// preserve order</span></span><br><span class="line">                    Node&lt;K,V&gt; loHead = <span class="keyword">null</span>, loTail = <span class="keyword">null</span>;</span><br><span class="line">                    Node&lt;K,V&gt; hiHead = <span class="keyword">null</span>, hiTail = <span class="keyword">null</span>;</span><br><span class="line">                    Node&lt;K,V&gt; next;</span><br><span class="line">                    <span class="keyword">do</span> &#123;</span><br><span class="line">                        next = e.next;</span><br><span class="line">                        </span><br><span class="line">                        <span class="comment">// 将原table中各槽位上元素重新分发到新的table的槽位中，分发规则如下：</span></span><br><span class="line">                        <span class="comment">// hash值比旧槽位大小-1在二进制上最高位之前多一个1的，分发到原槽位 + 原table大小处</span></span><br><span class="line">                        <span class="comment">// 不多一个1的分发到和原位置索引相同的新table的槽位上</span></span><br><span class="line">                        <span class="comment">// 那么，如何判断hash值比旧槽位大小-1在二进制上最高位之前多一个1呢？</span></span><br><span class="line">                        <span class="comment">// hash值比旧槽位大小-1在二进制上最高位之前多一个1等效于 hash值比旧槽位大小做按位与操作!=0</span></span><br><span class="line">                        </span><br><span class="line">                        <span class="comment">// 以 (e.hash &amp; oldCap) == 0 为条件，满足的分发到和原index相等的新table对应为止，不满足的分发到原index + 原table大小处</span></span><br><span class="line">                        <span class="comment">// 注意，整个过程中 hash 并未发生变化，变化的只是槽位的 index</span></span><br><span class="line">                        <span class="keyword">if</span> ((e.hash &amp; oldCap) == <span class="number">0</span>) &#123;</span><br><span class="line">                            <span class="keyword">if</span> (loTail == <span class="keyword">null</span>)</span><br><span class="line">                                loHead = e;</span><br><span class="line">                            <span class="keyword">else</span></span><br><span class="line">                                loTail.next = e;</span><br><span class="line">                            loTail = e;</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">else</span> &#123;</span><br><span class="line">                            <span class="keyword">if</span> (hiTail == <span class="keyword">null</span>)</span><br><span class="line">                                hiHead = e;</span><br><span class="line">                            <span class="keyword">else</span></span><br><span class="line">                                hiTail.next = e;</span><br><span class="line">                            hiTail = e;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125; <span class="keyword">while</span> ((e = next) != <span class="keyword">null</span>);</span><br><span class="line">                    <span class="keyword">if</span> (loTail != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        loTail.next = <span class="keyword">null</span>;</span><br><span class="line">                        newTab[j] = loHead;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">if</span> (hiTail != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        hiTail.next = <span class="keyword">null</span>;</span><br><span class="line">                        newTab[j + oldCap] = hiHead;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> newTab;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 普通链表节点类型转换成树链表类型</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Replaces all linked nodes in bin at index for given hash unless</span></span><br><span class="line"><span class="comment"> * table is too small, in which case resizes instead.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">treeifyBin</span><span class="params">(Node&lt;K,V&gt;[] tab, <span class="keyword">int</span> hash)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n, index; Node&lt;K,V&gt; e;</span><br><span class="line">    <span class="comment">// 小于树化阈值则改为执行扩容</span></span><br><span class="line">    <span class="keyword">if</span> (tab == <span class="keyword">null</span> || (n = tab.length) &lt; MIN_TREEIFY_CAPACITY)</span><br><span class="line">        resize();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 从首位候选人开始迭代，并转换</span></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> ((e = tab[index = (n - <span class="number">1</span>) &amp; hash]) != <span class="keyword">null</span>) &#123;</span><br><span class="line">        TreeNode&lt;K,V&gt; hd = <span class="keyword">null</span>, tl = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            TreeNode&lt;K,V&gt; p = replacementTreeNode(e, <span class="keyword">null</span>);</span><br><span class="line">            <span class="keyword">if</span> (tl == <span class="keyword">null</span>)</span><br><span class="line">                hd = p;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                p.prev = tl;</span><br><span class="line">                tl.next = p;</span><br><span class="line">            &#125;</span><br><span class="line">            tl = p;</span><br><span class="line">        &#125; <span class="keyword">while</span> ((e = e.next) != <span class="keyword">null</span>);</span><br><span class="line">        <span class="keyword">if</span> ((tab[index] = hd) != <span class="keyword">null</span>)</span><br><span class="line">            hd.treeify(tab);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://www.zhihu.com/question/20733617" target="_blank" rel="noopener">JDK 源码中 HashMap 的 hash 方法原理是什么？</a></p>
+<p><a href="https://www.cnblogs.com/loading4/p/6239441.html" target="_blank" rel="noopener">Java8 HashMap之tableSizeFor</a></p>
+<p><a href="https://www.zybuluo.com/kiraSally/note/836217" target="_blank" rel="noopener">集合番@HashMap一文通（1.8版）</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+      <div>
+        
+
+
+
+
+  
+
+
+
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>since1986</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    
+    <a href="https://since1986.github.io/ca4438af.html" title="HashMap源码分析">https://since1986.github.io/ca4438af.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/Java基础/" rel="tag"># Java基础</a>
+          
+            <a href="/tags/源码/" rel="tag"># 源码</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2b40a968.html" rel="next" title="Spring的Bean创建流程，以及DI和AOP流程解析">
+                <i class="fa fa-chevron-left"></i> Spring的Bean创建流程，以及DI和AOP流程解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar215x215.png" alt="since1986">
+            
+              <p class="site-author-name" itemprop="name">since1986</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">153</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">24</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/since1986" title="GitHub &rarr; https://github.com/since1986" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:385741668@qq.com" title="E-Mail &rarr; mailto:385741668@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://twitter.com/_since1986_" title="Twitter &rarr; https://twitter.com/_since1986_" rel="noopener" target="_blank"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.linkedin.com/in/fan-zhang-since1986" title="Linkedin &rarr; https://www.linkedin.com/in/fan-zhang-since1986" rel="noopener" target="_blank"><i class="fa fa-fw fa-linkedin"></i>Linkedin</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://since1986.github.io/" title="https://since1986.github.io/">我的主站</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://since1986.coding.me/" title="https://since1986.coding.me/" rel="noopener" target="_blank">我的高速镜像站</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.720ui.com/" title="http://blog.720ui.com/" rel="noopener" target="_blank">梁桂钊的博客</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://chenyongjun.vip/" title="http://chenyongjun.vip/" rel="noopener" target="_blank">码代码的陈同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://qixiaobo.site/" title="https://qixiaobo.site/" rel="noopener" target="_blank">后端之路</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://xilidou.com/" title="https://xilidou.com/" rel="noopener" target="_blank">犀利豆的博客</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#设计理念"><span class="nav-number">2.1.</span> <span class="nav-text">设计理念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基本逻辑"><span class="nav-number">2.2.</span> <span class="nav-text">基本逻辑</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码解读"><span class="nav-number">2.3.</span> <span class="nav-text">代码解读</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#常量"><span class="nav-number">2.3.1.</span> <span class="nav-text">常量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#内部数据结构"><span class="nav-number">2.3.2.</span> <span class="nav-text">内部数据结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#内部工具方法"><span class="nav-number">2.3.3.</span> <span class="nav-text">内部工具方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#属性"><span class="nav-number">2.3.4.</span> <span class="nav-text">属性</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2011 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">since1986</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">站点总字数：</span>
+    
+    <span title="站点总字数">544k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    
+    <span title="站点阅读时长">8:14</span>
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.1.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script src="/js/utils.js?v=7.1.2"></script>
+
+  <script src="/js/motion.js?v=7.1.2"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.1.2"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.1.2"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.1.2"></script>
+<script src="/js/post-details.js?v=7.1.2"></script>
+
+
+
+  
+
+
+  <script src="/js/next-boot.js?v=7.1.2"></script>
+
+
+  
+  <script src="/js/js.cookie.js?v=7.1.2"></script>
+  <script src="/js/scroll-cookie.js?v=7.1.2"></script>
+
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
