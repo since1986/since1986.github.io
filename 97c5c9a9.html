@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="Since1986">
 <meta property="og:description" content="前言如何构造更加灵活的，具有一定弹性扩展能力的架构呢。在本文中我们会结合具体的业务场景来聊一聊这个话题。 正文我们先来说一下场景：我手头负责的是支付服务。支付服务需要为外部调用者提供各种支付能力接口，比如：生成支付参数的接口、通知支付结果的接口、处理退款的接口，等等。同时，支付服务需要在内部封装对于各类支付平台以及其中各类的支付能力接口。简单点说，支付服务就是不同支付平台支付能力对于业务端服务的统">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-10-17T10:59:34.293Z">
+<meta property="og:updated_time" content="2019-10-17T11:48:55.545Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用责任链和SPI构建弹性的业务架构">
 <meta name="twitter:description" content="前言如何构造更加灵活的，具有一定弹性扩展能力的架构呢。在本文中我们会结合具体的业务场景来聊一聊这个话题。 正文我们先来说一下场景：我手头负责的是支付服务。支付服务需要为外部调用者提供各种支付能力接口，比如：生成支付参数的接口、通知支付结果的接口、处理退款的接口，等等。同时，支付服务需要在内部封装对于各类支付平台以及其中各类的支付能力接口。简单点说，支付服务就是不同支付平台支付能力对于业务端服务的统">
@@ -424,7 +424,7 @@
                 
               
 
-              <time title="创建时间：2019-10-17 18:54:33 / 修改时间：18:59:34" itemprop="dateCreated datePublished" datetime="2019-10-17T18:54:33+08:00">2019-10-17</time>
+              <time title="创建时间：2019-10-17 18:54:33 / 修改时间：19:48:55" itemprop="dateCreated datePublished" datetime="2019-10-17T18:54:33+08:00">2019-10-17</time>
             
 
             
@@ -554,7 +554,7 @@
 <p>这里创建了两个 <code>Handler</code>, 一个用于支持微信的通知逻辑，另一个用于支持支付宝的通知逻辑，他们都是依据 notification 检查是否是自己能处理的，能的话才实际进行处理。所有 <code>Handler</code> 都会被放到 List 中依次触发 <code>support</code> 因此，将来再多一个阿猫阿狗支付平台的逻辑，再实现一个 <code>阿猫啊狗Handler</code> 就好了，新实现的 <code>Handler</code> 同样也会进入 List 被访问到 <code>support</code>,流程依旧。这样，我们不需要提前知道会有什么样的逻辑要加进来，只要来一个，实现一个就好了。这样就实现了架构的弹性。</p>
 <p>到这里，第二种实现架构弹性的方式也介绍完了，再来总结一下，实际上就是将业务流程的起始点和终止点确定好，中间用 List 串起扩展点，在扩展点中挂载业务逻辑，需要新增业务逻辑时，不用整个推翻重写，而是再多实现一个扩展点就好了。</p>
 <p>到此，两种实现架构弹性的方式就都介绍完了，再来多说一些，这些设计思路基本上可以说是从中间件的设计思路中来的，比如第一种的<code>责任链</code>的实现来源于<code>netty</code>,而第二种的<code>SPI</code>的方式借鉴自<code>spring-mvc</code>，这些优秀的中间件的设计思想是值得学习的。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://since1986.coding.me/a9b7a8df.html" target="_blank" rel="noopener">Spring中如何使用责任链模式</a></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://cloud.tencent.com/developer/article/1463989" target="_blank" rel="noopener">Spring中如何使用责任链模式</a></p>
 
       
     </div>
