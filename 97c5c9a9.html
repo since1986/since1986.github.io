@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" href="/lib/fancybox/source/jquery.fancybox.css">
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.1.2">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.1.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.1.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.1.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.1.2" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.1.2',
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: true,
+    fancybox: true,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="前言如何构造更加灵活的，具有一定弹性扩展能力的架构呢。在本文中我们会结合具体的业务场景来聊一聊这个话题。 正文我们先来说一下场景：我手头负责的是支付服务。支付服务需要为外部调用者提供各种支付能力接口，比如：生成支付参数的接口、通知支付结果的接口、处理退款的接口，等等。同时，支付服务需要在内部封装对于各类支付平台以及其中各类的支付能力接口。简单点说，支付服务就是不同支付平台支付能力对于业务端服务的统">
+<meta name="keywords" content="设计">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用责任链和SPI构建弹性的业务架构">
+<meta property="og:url" content="https://since1986.github.io/97c5c9a9.html">
+<meta property="og:site_name" content="Since1986">
+<meta property="og:description" content="前言如何构造更加灵活的，具有一定弹性扩展能力的架构呢。在本文中我们会结合具体的业务场景来聊一聊这个话题。 正文我们先来说一下场景：我手头负责的是支付服务。支付服务需要为外部调用者提供各种支付能力接口，比如：生成支付参数的接口、通知支付结果的接口、处理退款的接口，等等。同时，支付服务需要在内部封装对于各类支付平台以及其中各类的支付能力接口。简单点说，支付服务就是不同支付平台支付能力对于业务端服务的统">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-10-17T10:55:24.605Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用责任链和SPI构建弹性的业务架构">
+<meta name="twitter:description" content="前言如何构造更加灵活的，具有一定弹性扩展能力的架构呢。在本文中我们会结合具体的业务场景来聊一聊这个话题。 正文我们先来说一下场景：我手头负责的是支付服务。支付服务需要为外部调用者提供各种支付能力接口，比如：生成支付参数的接口、通知支付结果的接口、处理退款的接口，等等。同时，支付服务需要在内部封装对于各类支付平台以及其中各类的支付能力接口。简单点说，支付服务就是不同支付平台支付能力对于业务端服务的统">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="https://since1986.github.io/97c5c9a9">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>使用责任链和SPI构建弹性的业务架构 | Since1986</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Since1986</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-notes">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/notes/" rel="section"><i class="menu-item-icon fa fa-fw fa-sticky-note-o"></i> <br>notes</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+
+  
+
+  <a href="https://github.com/since1986" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewbox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a>
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://since1986.github.io/97c5c9a9.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="since1986">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar215x215.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Since1986">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">使用责任链和SPI构建弹性的业务架构
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-17 18:54:33 / 修改时间：18:55:24" itemprop="dateCreated datePublished" datetime="2019-10-17T18:54:33+08:00">2019-10-17</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">17k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">15 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>如何构造更加灵活的，具有一定弹性扩展能力的架构呢。在本文中我们会结合具体的业务场景来聊一聊这个话题。</p>
+<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>我们先来说一下场景：我手头负责的是支付服务。支付服务需要为外部调用者提供各种支付能力接口，比如：生成支付参数的接口、通知支付结果的接口、处理退款的接口，等等。同时，支付服务需要在内部封装对于各类支付平台以及其中各类的支付能力接口。简单点说，支付服务就是不同支付平台支付能力对于业务端服务的统一门面。</p>
+<p>那么我们怎么样才能实现这种：对外是统一的门面，对内是不同的实现，这样的效果呢。我们先不直接回答这个问题，而是先回归到具体的业务需求的场景上来。</p>
+<p>请看需求：</p>
+<p>需求一. 提供一个“支付参数构造接口”，这个接口的作用是：业务调用端给一个请求，请求中里面包含了价格、IP、和一个“支付账号”，我们的接口接到请求后，先要记录一条“支付流水”，然后再根据请求参数中的支付账号路由到对应的支付平台对接逻辑，生成前端需要的，用于生成最终用户进行支付UI的参数（比如用于唤起支付宝支付页面的参数或生成微信支付二维码页面的参数）然后将这些参数封装为响应返给业务调用端。同时，这个需求中实际上还包含了隐含的需求：接口后续还会有若干其他的附加功能逻辑被添加到这个处理过程上，比如针对单个用户的支付参数生成频率的限制等，这些附加处理流程无法确定有多少。</p>
+<p>需求二. 提供一个“支付结果通知接口”，这个接口的作用是：当用户在前端完成了付款后，支付平台会给我们发送支付已成功的通知，我们接到这个通知后，需要进行签名验证，然后更新“支付流水状态”以及通知业务方支付已成功。同时，这个需求里其实也是包含了一个隐含的需求：不确定会支持多少个支付平台，每新接入一个支付平台都应该能够支持这个业务流程。</p>
+<p>我们可以看到，这两个需求中对于隐含需求的描述：“这些附加处理流程无法确定有多少” 以及 “不确定会支持多少个支付平台”，这其实是提示我们，需要实现一种 “弹性” 的架构方式。</p>
+<p>那么，怎么理解 “弹性” 呢？回到需求上来看，对于第一个需求，我们可以先来想象一下，如果我们一开始就把逻辑写死，也就是整个业务逻辑流程从开始到结束是一旦写好不能轻易修改的，那么，当后期需要增加新的业务逻辑流程进来时，我们不得不重新设计一遍业务流程，这想必是很麻烦的一件事。但是，如果我们在设计业务逻辑时，预先为将来有可能加入的流程预留一个接入点，或者说是扩展点，那么将来我们每加一个新逻辑只需要实现这个扩展点就好了，实现完了这个流程自动的会被加入到原有流程当中去，不用再把原有流程重写一遍，这样就可以理解为是一种 “弹性” （实际上可以类比于插件机制，可以想想平常咱们用的IDE的插件体系，开发一个新功能只要实现一个插件就好了，而不是把整个IDE重写一遍）；对于第二个需求，我们也可以想象一下，如果我们一开始把逻辑写死了只能通过内置类似于switch case这样的判断逻辑来决定分发到哪一种支付平台的逻辑上，那么我们怎么直到未来会接什么样的支付平台呢，根本无法知道，因此根本没法预先确定分支逻辑。那么我们就需要某一种架构方式，试其能够在不确定有多少分支的前提下也能做到逻辑分发，这种架构也可称之为是一种 “弹性” 的架构。</p>
+<p>那么，如何实现 “弹性” ？，对于第一个需求我们可以用设计模式中的 “责任链模式” 来解决。而对于第二个需求，我们可以用一种近似于 “SPI” 的模式来实现。具体的，我们回归到代码来看吧。</p>
+<p>先针对第一个需求，我们来看代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这是面向调用者的唯一接口</span></span><br><span class="line"><span class="meta">@ServiceContract</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">PaymentParamBuildService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 支付参数构建</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> paymentParamBuildRequest 支付参数构建请求</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 支付参数构建响应</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@OperationContract</span></span><br><span class="line">    <span class="function">PaymentParamBuildResponse <span class="title">execute</span><span class="params">(PaymentParamBuildRequest paymentParamBuildRequest)</span> <span class="keyword">throws</span> Throwable</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaymentParamBuildServiceImpl</span> <span class="keyword">implements</span> <span class="title">PaymentParamBuildService</span>, <span class="title">ApplicationContextAware</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> PaymentParamBuildResponse <span class="title">execute</span><span class="params">(PaymentParamBuildRequest paymentParamBuildRequest)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">        LOGGER.info(MARKER, <span class="string">"支付参数生成流程开始"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 这里就是我们的整体业务逻辑的流程，可以看到，业务逻辑是被分发给 HandlerPipeline 这个组件去处理了</span></span><br><span class="line">        PaymentParamBuildResponse paymentParamBuildResponse = <span class="keyword">new</span> PaymentParamBuildResponse();</span><br><span class="line">        HandlerPipeline handlerPipeline = applicationContext.getBean(DefaultHandlerPipeline.class, paymentParamBuildRequest, paymentParamBuildResponse);</span><br><span class="line">        handlerPipeline.fireExecute(); <span class="comment">// 业务逻辑是被分发给 HandlerPipeline</span></span><br><span class="line"></span><br><span class="line">        LOGGER.info(MARKER, <span class="string">"支付参数生成流程结束"</span>);</span><br><span class="line">        <span class="keyword">return</span> paymentParamBuildResponse;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从上边这段代码我们可以看到，<code>PaymentParamBuildService#execute</code> 的实现逻辑是：构造好一个空的响应对象，然后连同通过参数传递进来的请求对象一起，作为参数来构造了一个 <code>HandlerPipeline</code> 并且执行了其 <code>fireExecute</code>，那么，这个 <code>HandlerPipeline</code> 是个什么呢？实际上在这个 <code>HandlerPipeline</code> 背后是一系列关联的执行体系，这些执行体系构造成了 <code>责任链</code>。我们先把这个执行体系里的关键组件的代码放出来，然后我们再来仔细说明。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这个是上边提到的 HandlerPipeline</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">HandlerPipeline</span>&lt;<span class="title">RQ</span>, <span class="title">RS</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">fireExecute</span><span class="params">()</span> <span class="keyword">throws</span> Throwable</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">addLast</span><span class="params">(Handler&lt;RQ, RS&gt; handler)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这个是 HandlerPipeline 的默认实现</span></span><br><span class="line"><span class="meta">@Scope</span>(SCOPE_PROTOTYPE)</span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DefaultHandlerPipeline</span>&lt;<span class="title">RQ</span>, <span class="title">RS</span>&gt; <span class="keyword">implements</span> <span class="title">HandlerPipeline</span>&lt;<span class="title">RQ</span>, <span class="title">RS</span>&gt;, <span class="title">ApplicationContextAware</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> ApplicationContext applicationContext;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 头 HandlerContext</span></span><br><span class="line">    <span class="keyword">private</span> HandlerContext&lt;RQ, RS&gt; first;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 尾 HandlerContext</span></span><br><span class="line">    <span class="keyword">private</span> HandlerContext&lt;RQ, RS&gt; last;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> RQ request;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> RS response;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> HandlerContext&lt;RQ, RS&gt; <span class="title">getFirst</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> first;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> HandlerContext&lt;RQ, RS&gt; <span class="title">getLast</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> last;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 在构造时传入请求对象和响应对象</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">DefaultHandlerPipeline</span><span class="params">(RQ request, RS response)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.request = request;</span><br><span class="line">        <span class="keyword">this</span>.response = response;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 初始化头 HandlerContext 和尾 HandlerContext 并将他们两个链在一起</span></span><br><span class="line">    <span class="meta">@PostConstruct</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123; <span class="comment">// ①</span></span><br><span class="line">        first = <span class="keyword">new</span> FirstContext&lt;&gt;();</span><br><span class="line">        last = <span class="keyword">new</span> LastContext&lt;&gt;();</span><br><span class="line">        first.setHandler(<span class="keyword">new</span> DefaultHandler&lt;&gt;()); <span class="comment">// 头 HandlerContext 中的 Handler 使用缺省 Handler</span></span><br><span class="line">        last.setHandler(<span class="keyword">new</span> DefaultHandler&lt;&gt;()); <span class="comment">// 尾 HandlerContext 中的 Handler 使用缺省 Handler</span></span><br><span class="line">        first.setNext(last);</span><br><span class="line">        last.setPrev(first);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 执行头 HandlerContext 的 fireExecute 传入请求对象和响应对象作为参数</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fireExecute</span><span class="params">()</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">        first.fireExecute(request, response); <span class="comment">// ④</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 传入一个 Handler 将其构造为一个新的 HandlerContext 并把这个新的 HandlerContext 挂到当前 HandlerContext 链的倒数第二的位置上，也就是 last 之前</span></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addLast</span><span class="params">(Handler&lt;RQ, RS&gt; handler)</span> </span>&#123;</span><br><span class="line">        HandlerContext handlerContextBean = (HandlerContext) applicationContext.getBean(<span class="string">"defaultHandlerContext"</span>);</span><br><span class="line">        handlerContextBean.setHandler(handler); <span class="comment">// ③</span></span><br><span class="line"></span><br><span class="line">        last.getPrev().setNext(handlerContextBean);</span><br><span class="line">        handlerContextBean.setPrev(last.getPrev());</span><br><span class="line">        handlerContextBean.setNext(last);</span><br><span class="line">        last.setPrev(handlerContextBean);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setApplicationContext</span><span class="params">(ApplicationContext applicationContext)</span> <span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.applicationContext = applicationContext;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 头 HandlerContext 是一个特殊的类型，之所以要特化是考虑有可能会在头部需要特殊操作</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">FirstContext</span>&lt;<span class="title">RQ</span>, <span class="title">RS</span>&gt; <span class="keyword">extends</span> <span class="title">DefaultHandlerContext</span>&lt;<span class="title">RQ</span>, <span class="title">RS</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 尾 HandlerContext 是一个特殊的类型，之所以要特化是考虑有可能会在尾部需要特殊操作</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">LastContext</span>&lt;<span class="title">RQ</span>, <span class="title">RS</span>&gt; <span class="keyword">extends</span> <span class="title">DefaultHandlerContext</span>&lt;<span class="title">RQ</span>, <span class="title">RS</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 缺省 Handler</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">DefaultHandler</span>&lt;<span class="title">RQ</span>, <span class="title">RS</span>&gt; <span class="keyword">extends</span> <span class="title">HandlerAdapter</span>&lt;<span class="title">RQ</span>, <span class="title">RS</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Logger LOGGER = LoggerFactory.getLogger(DefaultHandler.class);</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">support</span><span class="params">(RQ request, RS response)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doExecute</span><span class="params">(RQ request, RS response)</span> </span>&#123;</span><br><span class="line">            LOGGER.info(<span class="string">"request &#123;&#125; response &#123;&#125;"</span>, JSON.toJSONString(request), JSON.toJSONString(response));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getOrder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> HIGHEST_PRECEDENCE;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HandlerBeanProcessor</span> <span class="keyword">implements</span> <span class="title">BeanPostProcessor</span>, <span class="title">ApplicationContextAware</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> ApplicationContext applicationContext;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">postProcessAfterInitialization</span><span class="params">(Object bean, String beanName)</span> <span class="keyword">throws</span> BeansException </span>&#123; <span class="comment">// ②</span></span><br><span class="line">        <span class="keyword">if</span> (bean <span class="keyword">instanceof</span> HandlerPipeline) &#123;</span><br><span class="line">            applicationContext</span><br><span class="line">                    .getBeansOfType(Handler.class) <span class="comment">// 将所有 Handler 类型的 Bean 找出来</span></span><br><span class="line">                    .entrySet()</span><br><span class="line">                    .stream()</span><br><span class="line">                    .sorted(Comparator.comparingInt(item -&gt; item.getValue().getOrder())) <span class="comment">// 按照 Handler 的排序标识进行排序</span></span><br><span class="line">                    .forEach(entry -&gt; ((HandlerPipeline) bean).addLast(entry.getValue())); <span class="comment">// 依次挂载到链的倒数第二个位置</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> bean;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setApplicationContext</span><span class="params">(ApplicationContext applicationContext)</span> <span class="keyword">throws</span> BeansException </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.applicationContext = applicationContext;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Handler 就是我们需要实现的 “扩展点”</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Handler</span>&lt;<span class="title">RQ</span>, <span class="title">RS</span>&gt; <span class="keyword">extends</span> <span class="title">Ordered</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 接收请求对象和响应对象并作业务逻辑，业务逻辑可以看作是拿到请求，经过某些处理后填充响应对象</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">execute</span><span class="params">(HandlerContext&lt;RQ, RS&gt; context, RQ request, RS response)</span> <span class="keyword">throws</span> Throwable</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 处理业务逻辑中的异常</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">exceptionCaught</span><span class="params">(HandlerContext&lt;RQ, RS&gt; context, Throwable throwable)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 业务中的 “扩展点” 的实现的一个例子，验证单个用户请求是否超频率</span></span><br><span class="line"><span class="meta">@Scope</span>(SCOPE_PROTOTYPE)</span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaymentParamBuildRequestCountLimitCheckHandler</span> <span class="keyword">implements</span> <span class="title">Handler</span>&lt;<span class="title">PaymentParamBuildRequest</span>, <span class="title">PaymentParamBuildResponse</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getOrder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(HandlerContext&lt;PaymentParamBuildRequest, PaymentParamBuildResponse&gt; context, PaymentParamBuildRequest request, PaymentParamBuildResponse response)</span> <span class="keyword">throws</span> Throwable </span>&#123;  <span class="comment">// ⑥</span></span><br><span class="line">        <span class="comment">// 校验频度是否超出阈值的逻辑</span></span><br><span class="line">        </span><br><span class="line">        ...</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span>(未超阈值) &#123;</span><br><span class="line">            <span class="comment">// 未超阈值则让下一个“链节”去执行，也就是继续后续业务逻辑</span></span><br><span class="line">            context.fireExecute(request, response); <span class="comment">// ⑦</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 超过阈值则不让下一个“链节”执行，也就是之后的业务逻辑就不会再执行了，整个业务逻辑终结于此</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">exceptionCaught</span><span class="params">(HandlerContext&lt;PaymentParamBuildRequest, PaymentParamBuildResponse&gt; context, Throwable throwable)</span> </span>&#123;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 处理在频度校验中出现的异常</span></span><br><span class="line">        ...</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这个是责任“链”上的一个“链节”，每个链节与其前驱和后继共同作用构成了“链”</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">HandlerContext</span>&lt;<span class="title">RQ</span>, <span class="title">RS</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 前驱</span></span><br><span class="line">    <span class="function">HandlerContext&lt;RQ, RS&gt; <span class="title">getPrev</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 后继</span></span><br><span class="line">    <span class="function">HandlerContext&lt;RQ, RS&gt; <span class="title">getNext</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setPrev</span><span class="params">(HandlerContext&lt;RQ, RS&gt; prev)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setNext</span><span class="params">(HandlerContext&lt;RQ, RS&gt; next)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Handler&lt;RQ, RS&gt; <span class="title">getHandler</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置这一链节上挂载的 Handler（扩展点）</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setHandler</span><span class="params">(Handler&lt;RQ, RS&gt; handler)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">fireExecute</span><span class="params">(RQ request, RS response)</span> <span class="keyword">throws</span> Throwable</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// “链节”的默认实现</span></span><br><span class="line"><span class="meta">@Scope</span>(SCOPE_PROTOTYPE)</span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DefaultHandlerContext</span>&lt;<span class="title">RQ</span>, <span class="title">RS</span>&gt; <span class="keyword">implements</span> <span class="title">HandlerContext</span>&lt;<span class="title">RQ</span>, <span class="title">RS</span>&gt; </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> HandlerContext&lt;RQ, RS&gt; prev;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> HandlerContext&lt;RQ, RS&gt; next;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Handler&lt;RQ, RS&gt; handler;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> HandlerContext&lt;RQ, RS&gt; <span class="title">getPrev</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> prev;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> HandlerContext&lt;RQ, RS&gt; <span class="title">getNext</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> next;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setPrev</span><span class="params">(HandlerContext&lt;RQ, RS&gt; prev)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.prev = prev;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setNext</span><span class="params">(HandlerContext&lt;RQ, RS&gt; next)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.next = next;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Handler&lt;RQ, RS&gt; <span class="title">getHandler</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> handler;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setHandler</span><span class="params">(Handler&lt;RQ, RS&gt; handler)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.handler = handler;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果有后继，拿到后继上挂载的 Handler 并执行</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fireExecute</span><span class="params">(RQ request, RS response)</span> </span>&#123;</span><br><span class="line">        HandlerContext&lt;RQ, RS&gt; _next = getNext();</span><br><span class="line">        <span class="keyword">if</span> (_next != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                _next.getHandler().execute(_next, request, response); <span class="comment">// ⑤</span></span><br><span class="line">            &#125; <span class="keyword">catch</span> (Throwable throwable) &#123;</span><br><span class="line">                _next.getHandler().exceptionCaught(_next, throwable);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以上是 <code>责任链</code> 的关键组件。那我们怎么理解这些组件呢？他们都是做什么用的？首先，我们先来说一下什么是责任链。我不想给你讲严格的定义，而是用一个例子来类比一下。可以在头脑中想想这样一个场景：一个车间中有若干工作站、一名车间主任和与车间数量相同的若干工人。车间主任按事先确定好的生产工序给若干工作站排序，具体做法是每个工作站会有个小本子记录下一个工作站是哪个，同时会给每个工作站分派一名工人。这个车间会加工某种工件，工件会先给到第一个工作站，第一个工作站中的工人拿到工件后进行加工，加工好后看看小本子，找到下一个（第二个）工作站，然后把工件传给第二个工作站的工人，第二个工作站工人拿到工件，加工好后再看看小本找到第三个工作站，把工件传给第三个工作站的工人，依次类推，直至最后一个工作站的工人处理好工件，整个工序结束。另外，生产规定中规定了某个工作站的工人有权决定不把工件传给下一个工作站的工人，这样，工序就就在当前工作站立刻结束。这个场景中每个工人加工工件可以算是一种 <code>责任</code>，而每个工作站有个小本记录谁是下一个工作站，这实际上构成了 <code>链</code> ，这样就组成了 <code>责任链</code>（当然，这个描述不严谨，更多严谨地描述请参考维基百科等资料来源中的介绍）。</p>
+<p>大致明白了什么是 <code>责任链</code> 之后，我们再回过头来看这几个组件：</p>
+<ul>
+<li><code>HandlerPipeline</code> 相当于车间主任</li>
+<li><code>HandlerContext</code> 相当于工作站</li>
+<li><code>Handler</code> 相当于被分派到工作站中的一个工人</li>
+<li><code>RQ request, RS response</code> 相当于待加工的工件</li>
+</ul>
+<p>代码 ① 和 ② 处：<code>HandlerPipeline</code>（车间主任） 将 <code>Handler</code>（工人） 附加到 <code>HandlerContext</code>（分派到某一车间，对应代码 ③ 处），并按照 <code>Handler</code> 的 <code>getOrder()</code> 排序（按确定好的工序），串到一起形成链表（形成<code>责任链</code>）</p>
+<p>代码 ④ 处：<code>first.fireExecute(request, response);</code> 执行第一个 <code>HandlerContext</code> 的 <code>fireExecute</code>（车间拿到工件先会到头一个工作站加工），代码 ⑤ 处获得当前 <code>HandlerContext</code> 的后继（查看小本本看看下一个工作站是哪个），并拿到后继中挂载的 <code>Handler</code>（然后把工件传给下一个工作站的工人） 执行其 <code>execute</code>（工人加工工件，也就是执行业务逻辑，对应代码 ⑥ 处）</p>
+<p>代码 ⑦ 处：根据某一条件决定还调不调用下一个 <code>HandlerContext</code> 的 <code>fireExecute</code>，也就是工人有权决定是否把工件传递给下个工作站的工人，如果选择传递，则业务逻辑继续，若不传递，业务逻辑就此终止。在我们的需求一中，此处的逻辑就是如果单用户访问未超阈值则继续后续业务逻辑，若超了，则阻断后续业务逻辑。（当然这个场景完全也可用 AOP 来做，但这不是本文的关注点，在此不讨论了）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">if(未超阈值) &#123;</span><br><span class="line">    // 未超阈值则让下一个“链节”去执行，也就是继续后续业务逻辑</span><br><span class="line">    context.fireExecute(request, response); // ⑦</span><br><span class="line">&#125; else &#123;</span><br><span class="line">    // 超过阈值则不让下一个“链节”执行，也就是之后的业务逻辑就不会再执行了，整个业务逻辑终结于此</span><br><span class="line">&#125;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>到此，第一个弹性架构的实现解法：“责任链” 就解析完成了。我们来总结一下，实际上就是将业务流程的起始点和终止点确定好，中间用链串起扩展点，在扩展点中挂载业务逻辑，需要新增业务逻辑时，不用整个推翻重写，而是再多实现一个扩展点就好了，这样就实现了弹性。</p>
+<p>我们再来看第二个需求对应的代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 面向调用者的接口</span></span><br><span class="line"><span class="meta">@ServiceContract</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">PaymentNotificationService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 执行支付后通知处理</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> notificationRequest 支付后通知请求</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 支付后通知响应</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@OperationContract</span></span><br><span class="line">    <span class="function">PaymentNotificationResponse <span class="title">execute</span><span class="params">(PaymentNotificationRequest notificationRequest)</span> <span class="keyword">throws</span> Throwable</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 接口的实现</span></span><br><span class="line"><span class="meta">@Service</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaymentNotificationServiceImpl</span> <span class="keyword">implements</span> <span class="title">PaymentNotificationService</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> List&lt;Handler&gt; handlers;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setHandlers</span><span class="params">(List&lt;Handler&gt; handlers)</span> </span>&#123; <span class="comment">// ④</span></span><br><span class="line">        <span class="keyword">this</span>.handlers = handlers;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> PaymentNotificationResponse <span class="title">execute</span><span class="params">(PaymentNotificationRequest notificationRequest)</span> </span>&#123;</span><br><span class="line">        LOGGER.info(MARKER, <span class="string">"支付结果通知流程开始"</span>);</span><br><span class="line"></span><br><span class="line">        PaymentNotificationResponse notificationResponse = <span class="keyword">new</span> PaymentNotificationResponse();</span><br><span class="line">        handlers</span><br><span class="line">                .stream()</span><br><span class="line">                .filter(handler -&gt; handler.support(notificationRequest)) <span class="comment">// ⑤</span></span><br><span class="line">                .forEach(handler -&gt; handler.execute(notificationRequest, notificationResponse)); <span class="comment">// ⑥</span></span><br><span class="line"></span><br><span class="line">        LOGGER.info(MARKER, <span class="string">"支付结果通知流程结束"</span>);</span><br><span class="line">        <span class="keyword">return</span> notificationResponse;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Handler</span> </span>&#123; <span class="comment">// ①</span></span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">boolean</span> <span class="title">support</span><span class="params">(PaymentNotificationRequest notificationRequest)</span></span>; <span class="comment">// ②</span></span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">execute</span><span class="params">(PaymentNotificationRequest notificationRequest, PaymentNotificationResponse notificationResponse)</span></span>; <span class="comment">// ③</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Component</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">WeChatPayHandler</span> <span class="keyword">implements</span> <span class="title">Handler</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        ...</span><br><span class="line">        </span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">support</span><span class="params">(PaymentNotificationRequest notificationRequest)</span> </span>&#123;</span><br><span class="line">            <span class="comment">// 依据 notification 检查是否为微信支付结果通知流程</span></span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(PaymentNotificationRequest notificationRequest, PaymentNotificationResponse notificationResponse)</span> </span>&#123;</span><br><span class="line">            <span class="comment">// 执行微信支付结果通知流程</span></span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Component</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">AlipayHandler</span> <span class="keyword">implements</span> <span class="title">Handler</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">support</span><span class="params">(PaymentNotificationRequest notificationRequest)</span> </span>&#123;</span><br><span class="line">            <span class="comment">// 依据 notification 检查是否为支付宝结果通知流程</span></span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(PaymentNotificationRequest notificationRequest, PaymentNotificationResponse notificationResponse)</span> </span>&#123;</span><br><span class="line">            <span class="comment">// 执行支付宝结果通知流程</span></span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        ...</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以上是第二个业务逻辑的代码，在这里，我们使用了类似于<code>SPI</code>的模式，再说的具体一点，是一种类似于 <code>spring-mvc</code> 中的 <code>HandlerAdapter</code> 的 <code>SPI</code>（关于这一点可参看我得另一篇文章 <a href="https://since1986.coding.me/a9b7a8df.html" target="_blank" rel="noopener">spring实现根据controller中接收请求参数不同走不同service</a>），那么<code>SPI</code>模式怎么做到弹性的呢？我们再来想象一个场景：一个车间有一条传送带，传送带旁依次站立若干名工人，没一名工人只能加工一种工件。各种工件从传送带上依次经过每个工人，每个工人拿起工件后，先看一看这个是不是自己能处理的工件类型，如果是，则进行加工，加工好后得到成品然后拿出车间，如果不是，则原样放回传送带，让下一个工人重复同样的步骤。</p>
+<p>回到代码上来：</p>
+<ul>
+<li><code>Handler</code> 相当于工人</li>
+<li><code>PaymentNotificationRequest</code> 相当于某种工件</li>
+</ul>
+<p>代码 ① 处 <code>Handler</code> 是对工人的抽象，代码 ② 处 <code>boolean support(PaymentNotificationRequest notificationRequest)</code> 是对应于“判断工件是不是自己能加工的类型”，代码 ③ 处<code>void execute(PaymentNotificationRequest notificationRequest, PaymentNotificationResponse notificationResponse);</code> 对应于“加工工件”</p>
+<p>代码 ④ 处这个 List 方式的注入，实际上是构造了一条“传送带”，代码 ⑤ 处 <code>.filter(handler -&gt; handler.support(notificationRequest))</code> 对应于工人从传送带上拿下来工件并判断是不是自己能加工的类型</p>
+<p>代码 ⑥ 处 <code>handler -&gt; handler.execute(notificationRequest, notificationResponse)</code> 对应了工人加工工件</p>
+<p>可以再来看一下这段代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">public static class WeChatPayHandler implements Handler &#123;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    @Override</span><br><span class="line">    public boolean support(PaymentNotificationRequest notificationRequest) &#123;</span><br><span class="line">        // 依据 notification 检查是否为微信支付结果通知流程</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void execute(PaymentNotificationRequest notificationRequest, PaymentNotificationResponse notificationResponse) &#123;</span><br><span class="line">        // 执行微信支付结果通知流程</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@Component</span><br><span class="line">public static class AlipayHandler implements Handler &#123;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public boolean support(PaymentNotificationRequest notificationRequest) &#123;</span><br><span class="line">        // 依据 notification 检查是否为支付宝结果通知流程</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public void execute(PaymentNotificationRequest notificationRequest, PaymentNotificationResponse notificationResponse) &#123;</span><br><span class="line">        // 执行支付宝结果通知流程</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里创建了两个 <code>Handler</code>, 一个用于支持微信的通知逻辑，另一个用于支持支付宝的通知逻辑，他们都是依据 notification 检查是否是自己能处理的，能的话才实际进行处理。所有 <code>Handler</code> 都会被放到 List 中依次触发 <code>support</code> 因此，将来再多一个阿猫阿狗支付平台的逻辑，再实现一个 <code>阿猫啊狗Handler</code> 就好了，新实现的 <code>Handler</code> 同样也会进入 List 被访问到 <code>support</code>,流程依旧。这样，我们不需要提前知道会有什么样的逻辑要加进来，只要来一个，实现一个就好了。这样就实现了架构的弹性。</p>
+<p>到这里，第二种实现架构弹性的方式也介绍完了，再来总结一下，实际上就是将业务流程的起始点和终止点确定好，中间用 List 串起扩展点，在扩展点中挂载业务逻辑，需要新增业务逻辑时，不用整个推翻重写，而是再多实现一个扩展点就好了。</p>
+<p>到此，两种实现架构弹性的方式就都介绍完了，再来多说一些，这些设计思路基本上可以说是从中间件的设计思路中来的，比如第一种的<code>责任链</code>的实现来源于<code>netty</code>,而第二种的<code>SPI</code>的方式借鉴自<code>spring-mvc</code>，这些优秀的中间件的设计思想是值得学习的。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://since1986.coding.me/a9b7a8df.html" target="_blank" rel="noopener">Spring中如何使用责任链模式</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+      <div>
+        
+
+
+
+
+  
+
+
+
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>since1986</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    
+    <a href="https://since1986.github.io/97c5c9a9.html" title="使用责任链和SPI构建弹性的业务架构">https://since1986.github.io/97c5c9a9.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/设计/" rel="tag"># 设计</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/ca4438af.html" rel="next" title="HashMap源码分析">
+                <i class="fa fa-chevron-left"></i> HashMap源码分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar215x215.png" alt="since1986">
+            
+              <p class="site-author-name" itemprop="name">since1986</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">154</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">24</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/since1986" title="GitHub &rarr; https://github.com/since1986" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:385741668@qq.com" title="E-Mail &rarr; mailto:385741668@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://twitter.com/_since1986_" title="Twitter &rarr; https://twitter.com/_since1986_" rel="noopener" target="_blank"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://www.linkedin.com/in/fan-zhang-since1986" title="Linkedin &rarr; https://www.linkedin.com/in/fan-zhang-since1986" rel="noopener" target="_blank"><i class="fa fa-fw fa-linkedin"></i>Linkedin</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://since1986.github.io/" title="https://since1986.github.io/">我的主站</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://since1986.coding.me/" title="https://since1986.coding.me/" rel="noopener" target="_blank">我的高速镜像站</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://blog.720ui.com/" title="http://blog.720ui.com/" rel="noopener" target="_blank">梁桂钊的博客</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://chenyongjun.vip/" title="http://chenyongjun.vip/" rel="noopener" target="_blank">码代码的陈同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://qixiaobo.site/" title="https://qixiaobo.site/" rel="noopener" target="_blank">后端之路</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://xilidou.com/" title="https://xilidou.com/" rel="noopener" target="_blank">犀利豆的博客</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2011 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">since1986</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">站点总字数：</span>
+    
+    <span title="站点总字数">560k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    
+    <span title="站点阅读时长">8:29</span>
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.1.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script src="/js/utils.js?v=7.1.2"></script>
+
+  <script src="/js/motion.js?v=7.1.2"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.1.2"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.1.2"></script>
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.1.2"></script>
+<script src="/js/post-details.js?v=7.1.2"></script>
+
+
+
+  
+
+
+  <script src="/js/next-boot.js?v=7.1.2"></script>
+
+
+  
+  <script src="/js/js.cookie.js?v=7.1.2"></script>
+  <script src="/js/scroll-cookie.js?v=7.1.2"></script>
+
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+  <script>
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url).replace(/\/{2,}/g, '/');
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x"></i></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x"></i></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
