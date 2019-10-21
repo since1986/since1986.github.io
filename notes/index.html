@@ -147,7 +147,7 @@
 <meta property="og:image" content="https://since1986.github.io/notes/index/144-1.jpg">
 <meta property="og:image" content="https://since1986.github.io/notes/index/146-1.jpg">
 <meta property="og:image" content="https://since1986.github.io/notes/index/146-2.jpg">
-<meta property="og:updated_time" content="2019-10-21T03:02:08.089Z">
+<meta property="og:updated_time" content="2019-10-21T09:46:15.356Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="notes">
 <meta name="twitter:description" content="前言这里记录一些笔记 正文#1 等待通知机制123456789101112131415161718192021222324252627282930313233343536373839// JVM 实现public class Test2 &amp;#123;    private static final Object LOCK = new Object(); // 注意当作锁的对象一定要是final的，">
@@ -1081,7 +1081,7 @@
 <p>如果volatile修饰数组变量，那么它只对数组变量本身起作用，对数组内元素并不起作用，如果volatile修饰引用类型的变量，那么它只对变量本身起作用，对变量对应的引用类型实例内部的属性并不起作用</p>
 <h3 id="126-join-可见性保证"><a href="#126-join-可见性保证" class="headerlink" title="#126 join() 可见性保证"></a>#126 join() 可见性保证</h3><p>join()之前的更改对于join()之后的操作可见</p>
 <h3 id="127-貌似串行语义"><a href="#127-貌似串行语义" class="headerlink" title="#127 貌似串行语义"></a>#127 貌似串行语义</h3><p>貌似串行语义 as-if-serial 只保证单线程程序冲排序后结果和未超排序一致而不保证多线程下的</p>
-<h3 id="128-线程安全"><a href="#128-线程安全" class="headerlink" title="#128 线程安全"></a>#128 线程安全</h3><p>多线程保证线程安全需要满足的：原子性 可见性 有序性 互斥</p>
+<h3 id="128-线程安全"><a href="#128-线程安全" class="headerlink" title="#128 线程安全"></a>#128 线程安全</h3><p>多线程保证线程安全需要满足的：原子性(完全的原子性还要包含互斥，volatile的原子性不包含互斥并不完整) 可见性 有序性 </p>
 <p>原子性 保证不产生中间状态同时不交错</p>
 <h3 id="129-start-可见性保证"><a href="#129-start-可见性保证" class="headerlink" title="#129 start() 可见性保证"></a>#129 start() 可见性保证</h3><p>start()之前的写操作对之后启动的线程可见</p>
 <h3 id="130-临界区"><a href="#130-临界区" class="headerlink" title="#130 临界区"></a>#130 临界区</h3><p>临界区：加锁和释放锁之间的执行区</p>

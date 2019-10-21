@@ -108,14 +108,14 @@
 <meta property="og:site_name" content="Since1986">
 <meta property="og:description" content="前言在团队现在架构体系中，没有一个能够统一管理和控制 API 的实体。集团虽然提供了负载均衡等最基础的网关能力，但是 API 鉴权等进阶功能，集团并未提供，因此需要考虑是否要自行维护一个网关。Kong是一个著名的开源网关实现，对它进行一些了解。 正文Kong是什么 API 网关 一个在 Nginx 中运行的 Lua 应用 Kong的组件   Route：是请求的转发规则，按照Hostname和PA">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://since1986.github.io/undefined/1.png">
-<meta property="og:image" content="https://since1986.github.io/undefined/2.png">
-<meta property="og:image" content="https://since1986.github.io/undefined/3.png">
-<meta property="og:updated_time" content="2019-10-21T03:24:18.785Z">
+<meta property="og:image" content="https://since1986.github.io/70337251/1.png">
+<meta property="og:image" content="https://since1986.github.io/70337251/2.png">
+<meta property="og:image" content="https://since1986.github.io/70337251/3.png">
+<meta property="og:updated_time" content="2019-10-21T03:24:24.335Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Kong的简单了解">
 <meta name="twitter:description" content="前言在团队现在架构体系中，没有一个能够统一管理和控制 API 的实体。集团虽然提供了负载均衡等最基础的网关能力，但是 API 鉴权等进阶功能，集团并未提供，因此需要考虑是否要自行维护一个网关。Kong是一个著名的开源网关实现，对它进行一些了解。 正文Kong是什么 API 网关 一个在 Nginx 中运行的 Lua 应用 Kong的组件   Route：是请求的转发规则，按照Hostname和PA">
-<meta name="twitter:image" content="https://since1986.github.io/undefined/1.png">
+<meta name="twitter:image" content="https://since1986.github.io/70337251/1.png">
 
 
 
@@ -428,7 +428,7 @@
                 
               
 
-              <time title="创建时间：2019-10-21 11:17:04 / 修改时间：11:24:18" itemprop="dateCreated datePublished" datetime="2019-10-21T11:17:04+08:00">2019-10-21</time>
+              <time title="创建时间：2019-10-21 11:17:04 / 修改时间：11:24:24" itemprop="dateCreated datePublished" datetime="2019-10-21T11:17:04+08:00">2019-10-21</time>
             
 
             
@@ -516,13 +516,13 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 如果按下面配置启动成功后Kong会跑几个端口：8000 和 8443 是 Proxy 的端口，也就是对外提供的访问 API 用的端口, 8001 和 8444 是管理端口，也就是用来创建路由、Service 等用的。</span></span><br><span class="line">docker run -d --name kong --link kong-database:kong-database -e <span class="string">"KONG_DATABASE=postgres"</span> -e <span class="string">"KONG_PG_HOST=kong-database"</span> -e <span class="string">"KONG_CASSANDRA_CONTACT_POINTS=kong-database"</span> -e <span class="string">"KONG_PROXY_ACCESS_LOG=/dev/stdout"</span> -e <span class="string">"KONG_ADMIN_ACCESS_LOG=/dev/stdout"</span> -e <span class="string">"KONG_PROXY_ERROR_LOG=/dev/stderr"</span> -e <span class="string">"KONG_ADMIN_ERROR_LOG=/dev/stderr"</span> -e <span class="string">"KONG_ADMIN_LISTEN=0.0.0.0:8001, 0.0.0.0:8444 ssl"</span> -p 8000:8000 -p 8443:8443 -p 8001:8001 -p 8444:8444 kong</span><br></pre></td></tr></table></figure>
 
 <h3 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h3><p>创建 service</p>
-<img src="/undefined/1.png">
+<img src="/70337251/1.png">
 
 <p>创建routes</p>
-<img src="/undefined/2.png">
+<img src="/70337251/2.png">
 
 <p>测试proxy</p>
-<img src="/undefined/3.png">
+<img src="/70337251/3.png">
 
 <h3 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h3><p>基本的 docker 操作命令</p>
 <pre><code class="bash"><span class="comment"># 查看所有容器</span>
