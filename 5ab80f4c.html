@@ -108,13 +108,13 @@
 <meta property="og:site_name" content="Since1986">
 <meta property="og:description" content="前言线程安全的四个要素：原子、互斥、可见、有序 正文关于 volatile 的可见性和有序性的保证这块，我看了一本书，他里面的描述和别的书不一样，我更倾向于这本书的描述。 首先，内存屏障按保障可见性来划分可分为LoadBarrier 和 StoreBarrier ；LoadBarrier作用是将其他写线程对于共享变量的更新从其他处理器同步至当前线程的执行处理器，StoreBarrier的作用是保证">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://since1986.github.io/undefined/1.jpg">
-<meta property="og:image" content="https://since1986.github.io/undefined/2.jpg">
-<meta property="og:updated_time" content="2019-10-21T02:05:54.659Z">
+<meta property="og:image" content="https://since1986.github.io/5ab80f4c/1.jpg">
+<meta property="og:image" content="https://since1986.github.io/5ab80f4c/2.jpg">
+<meta property="og:updated_time" content="2019-10-21T03:06:25.466Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="volatile如何保证可见性与有序性">
 <meta name="twitter:description" content="前言线程安全的四个要素：原子、互斥、可见、有序 正文关于 volatile 的可见性和有序性的保证这块，我看了一本书，他里面的描述和别的书不一样，我更倾向于这本书的描述。 首先，内存屏障按保障可见性来划分可分为LoadBarrier 和 StoreBarrier ；LoadBarrier作用是将其他写线程对于共享变量的更新从其他处理器同步至当前线程的执行处理器，StoreBarrier的作用是保证">
-<meta name="twitter:image" content="https://since1986.github.io/undefined/1.jpg">
+<meta name="twitter:image" content="https://since1986.github.io/5ab80f4c/1.jpg">
 
 
 
@@ -427,7 +427,7 @@
                 
               
 
-              <time title="创建时间：2019-10-21 10:00:54 / 修改时间：10:05:54" itemprop="dateCreated datePublished" datetime="2019-10-21T10:00:54+08:00">2019-10-21</time>
+              <time title="创建时间：2019-10-21 10:00:54 / 修改时间：11:06:25" itemprop="dateCreated datePublished" datetime="2019-10-21T10:00:54+08:00">2019-10-21</time>
             
 
             
@@ -500,9 +500,9 @@
 <p>按照保证有序性来划分，内存屏障可以分为<code>AcquireBarrier</code>和<code>ReleaseBarrier</code> ：<code>AcquireBarrier</code>加在读操作后，作用是防止该读操作与屏障后的任何读写操作重排序；而<code>ReleaseBarrier</code>加在写操作之前，作用是防止该写操作和屏障之前的任何读写操作重排序</p>
 <p>然后再来看 <code>volatile</code>：
 对于<code>volatile</code>写来说：JVM会在其之前插入<code>ReleaseBarrier</code>，这样可以防止其和屏障前的任何读写操作重排序；同时还会在其后插入一个<code>StoreBarrier</code> 这样就可以让此写操作对于其他读线程对应的执行处理器是可同步的<br>对于<code>volatile</code>读来说：JVM会在其之前插入<code>LoadBarrier</code>，这样其他线程的写操作的结果会同步给当前线程的执行处理器；然后还会在其之后插入<code>AcquireBarrier</code>，这样能防止其与屏障之后的读写操作重排序</p>
-<img src="/undefined/1.jpg">
+<img src="/5ab80f4c/1.jpg">
 
-<img src="/undefined/2.jpg">
+<img src="/5ab80f4c/2.jpg">
 
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p>《Java多线程编程实战指南》</p>
 
