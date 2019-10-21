@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Kong的简单了解]]></title>
+    <url>%2F70337251.html</url>
+    <content type="text"><![CDATA[前言在团队现在架构体系中，没有一个能够统一管理和控制 API 的实体。集团虽然提供了负载均衡等最基础的网关能力，但是 API 鉴权等进阶功能，集团并未提供，因此需要考虑是否要自行维护一个网关。Kong是一个著名的开源网关实现，对它进行一些了解。 正文Kong是什么 API 网关 一个在 Nginx 中运行的 Lua 应用 Kong的组件 Route：是请求的转发规则，按照Hostname和PATH，将请求转发给Service。 Services：是多个Upstream的集合，是Route的转发目标。 Consumer：是API的用户，里面记录用户的一些信息。 Plugin：是插件，plugin可以是全局的，绑定到Service，绑定到Router，绑定到Consumer。安装安装先决条件 PostgreSQL 1docker run -d --name kong-database -p 5432:5432 -e "POSTGRES_USER=kong" -e "POSTGRES_DB=kong" postgres:9.6 建库 1docker run --rm --link kong-database:kong-database -e "KONG_DATABASE=postgres" -e "KONG_PG_HOST=kong-database" -e "KONG_CASSANDRA_CONTACT_POINTS=kong-database" kong kong migrations bootstrap 安装Kong 12# 如果按下面配置启动成功后Kong会跑几个端口：8000 和 8443 是 Proxy 的端口，也就是对外提供的访问 API 用的端口, 8001 和 8444 是管理端口，也就是用来创建路由、Service 等用的。docker run -d --name kong --link kong-database:kong-database -e "KONG_DATABASE=postgres" -e "KONG_PG_HOST=kong-database" -e "KONG_CASSANDRA_CONTACT_POINTS=kong-database" -e "KONG_PROXY_ACCESS_LOG=/dev/stdout" -e "KONG_ADMIN_ACCESS_LOG=/dev/stdout" -e "KONG_PROXY_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_LISTEN=0.0.0.0:8001, 0.0.0.0:8444 ssl" -p 8000:8000 -p 8443:8443 -p 8001:8001 -p 8444:8444 kong 使用创建 service 创建routes 测试proxy 附录基本的 docker 操作命令 # 查看所有容器 docker ps -a # 启动某一容器 docker start &lt;容器ID&gt; # 停止某一容器 docker stop &lt;容器ID&gt; # 删除某一容器 docker rm &lt;容器ID&gt;]]></content>
+      <tags>
+        <tag>实践</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[volatile如何保证可见性与有序性]]></title>
     <url>%2F5ab80f4c.html</url>
     <content type="text"><![CDATA[前言线程安全的四个要素：原子、互斥、可见、有序 正文关于 volatile 的可见性和有序性的保证这块，我看了一本书，他里面的描述和别的书不一样，我更倾向于这本书的描述。 首先，内存屏障按保障可见性来划分可分为LoadBarrier 和 StoreBarrier ；LoadBarrier作用是将其他写线程对于共享变量的更新从其他处理器同步至当前线程的执行处理器，StoreBarrier的作用是保证写线程对共享变量的更新对于其他读线程的执行处理器是可同步的 按照保证有序性来划分，内存屏障可以分为AcquireBarrier和ReleaseBarrier ：AcquireBarrier加在读操作后，作用是防止该读操作与屏障后的任何读写操作重排序；而ReleaseBarrier加在写操作之前，作用是防止该写操作和屏障之前的任何读写操作重排序 然后再来看 volatile： 对于volatile写来说：JVM会在其之前插入ReleaseBarrier，这样可以防止其和屏障前的任何读写操作重排序；同时还会在其后插入一个StoreBarrier 这样就可以让此写操作对于其他读线程对应的执行处理器是可同步的对于volatile读来说：JVM会在其之前插入LoadBarrier，这样其他线程的写操作的结果会同步给当前线程的执行处理器；然后还会在其之后插入AcquireBarrier，这样能防止其与屏障之后的读写操作重排序 参考资料《Java多线程编程实战指南》]]></content>
