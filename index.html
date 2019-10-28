@@ -377,6 +377,189 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://since1986.github.io/936d3207.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="since1986">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar215x215.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Since1986">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/936d3207.html" class="post-title-link" itemprop="url">实现了hashCode()必须同时实现equals()是否违反了最少知识原则?</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-28 14:59:54 / 修改时间：15:18:05" itemprop="dateCreated datePublished" datetime="2019-10-28T14:59:54+08:00">2019-10-28</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">1.1k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">1 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>
+              前言突然想到的。
+正文
+迪米特法则（Law of Demeter，LoD）又叫作最少知识原则（Least Knowledge Principle，LKP)，产生于 1987 年美国东北大学（North
+              ...
+            </p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/936d3207.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://since1986.github.io/63dc2b99.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -397,7 +580,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/63dc2b99.html" class="post-title-link" itemprop="url">AbstractQueuedSynchronizer分析</a>
+                <a href="/63dc2b99.html" class="post-title-link" itemprop="url">AbstractQueuedSynchronizer笔记</a>
               
             
           </h1>
@@ -439,7 +622,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-10-28 12:01:25" itemprop="dateModified" datetime="2019-10-28T12:01:25+08:00">2019-10-28</time>
+                <time title="修改时间：2019-10-28 17:21:20" itemprop="dateModified" datetime="2019-10-28T17:21:20+08:00">2019-10-28</time>
               
             
           </span>
@@ -467,7 +650,7 @@
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">12k</span>
+                <span title="本文字数">18k</span>
               
 
               
@@ -481,7 +664,7 @@
                 
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-                <span title="阅读时长">11 分钟</span>
+                <span title="阅读时长">17 分钟</span>
               
             </div>
           
@@ -506,11 +689,7 @@
             <p>
               前言一系列并发API的基础。
 正文设计
-将高层次状态的表示与转换经过映射逻辑转换为低层次状态的表示与转换(状态模式)
-部分逻辑留给子类实现，自己实现通用逻辑(模板方法模式)
-
-概念
-状态：用来实现高级
+将高层次状态的表示与转换经过映射逻辑转换为低层次状态的表示与转换(状态模式)，可以理解为AQS就是一个手表，指针位置这种上层状态的转变就是我们要实现的上层逻辑，
               ...
             </p>
           <!--noindex-->
@@ -802,12 +981,24 @@
                 
               
 
-              <time title="创建时间：2019-10-21 10:00:54 / 修改时间：11:06:25" itemprop="dateCreated datePublished" datetime="2019-10-21T10:00:54+08:00">2019-10-21</time>
+              <time title="创建时间：2019-10-21 10:00:54" itemprop="dateCreated datePublished" datetime="2019-10-21T10:00:54+08:00">2019-10-21</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-28 15:21:45" itemprop="dateModified" datetime="2019-10-28T15:21:45+08:00">2019-10-28</time>
               
             
           </span>
@@ -835,7 +1026,7 @@
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">637</span>
+                <span title="本文字数">655</span>
               
 
               
@@ -872,9 +1063,8 @@
         
           
             <p>
-              前言线程安全的四个要素：原子、互斥、可见、有序
-正文关于 volatile 的可见性和有序性的保证这块，我看了一本书，他里面的描述和别的书不一样，我更倾向于这本书的描述。
-首先，内存屏障按保障可见性来
+              前言线程安全的四个要素：原子(分为完全原子性，也就是包含了互斥和非完全原子性，也就是不包含互斥)、可见、有序
+正文volatile 对于可见性和有序性的保证是用了 两类 内存屏障(Barrier)来实
               ...
             </p>
           <!--noindex-->
@@ -1142,7 +1332,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/ca4438af.html" class="post-title-link" itemprop="url">HashMap源码分析</a>
+                <a href="/ca4438af.html" class="post-title-link" itemprop="url">HashMap笔记</a>
               
             
           </h1>
@@ -1167,12 +1357,24 @@
                 
               
 
-              <time title="创建时间：2019-10-16 16:12:03 / 修改时间：16:20:40" itemprop="dateCreated datePublished" datetime="2019-10-16T16:12:03+08:00">2019-10-16</time>
+              <time title="创建时间：2019-10-16 16:12:03" itemprop="dateCreated datePublished" datetime="2019-10-16T16:12:03+08:00">2019-10-16</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-28 17:16:38" itemprop="dateModified" datetime="2019-10-28T17:16:38+08:00">2019-10-28</time>
               
             
           </span>
@@ -2033,193 +2235,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://since1986.github.io/25c279dc.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="since1986">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar215x215.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Since1986">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/25c279dc.html" class="post-title-link" itemprop="url">实现一个红黑树</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-09-18 16:17:56 / 修改时间：16:39:18" itemprop="dateCreated datePublished" datetime="2019-09-18T16:17:56+08:00">2019-09-18</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-            <div class="post-symbolscount">
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">本文字数：</span>
-                
-                <span title="本文字数">9.8k</span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">9 分钟</span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>
-              前言感受一下红黑树的死亡旋转。
-正文红黑树的特性： 
-
-根节点为黑色
-叶子节点(也就是 null)为黑色
-如果某个节点为红色，那么他的两个子节点必须都是黑色的
-从某个结点出发，经历任何一种路径，其中经
-              ...
-            </p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/25c279dc.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2268,7 +2283,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">157</span>
+                    <span class="site-state-item-count">158</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2482,7 +2497,7 @@
     
       <span class="post-meta-item-text">站点总字数：</span>
     
-    <span title="站点总字数">574k</span>
+    <span title="站点总字数">582k</span>
   
 
   
@@ -2493,7 +2508,7 @@
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">8:42</span>
+    <span title="站点阅读时长">8:49</span>
   
 </div>
 

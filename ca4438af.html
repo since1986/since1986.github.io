@@ -103,14 +103,14 @@
   <meta name="description" content="前言基础知识。 正文设计理念 尽最大努力尽量避免坏情况发生：在 hash() 中用扰动函数力图将 hash 冲突降至最低 当坏情况不可避免地发生了，则尽量降低其带来的负面影响：hash 冲突产生了用槽位存储普通链表或红黑树型链表解决 特事特办：在 get 时先尝试匹配首节点，如果匹配直接返回，如果不匹配才走标准查找算法 快速失败  基本逻辑 利用数组 table 存储 Node，每个 table">
 <meta name="keywords" content="Java基础,源码">
 <meta property="og:type" content="article">
-<meta property="og:title" content="HashMap源码分析">
+<meta property="og:title" content="HashMap笔记">
 <meta property="og:url" content="https://since1986.github.io/ca4438af.html">
 <meta property="og:site_name" content="Since1986">
 <meta property="og:description" content="前言基础知识。 正文设计理念 尽最大努力尽量避免坏情况发生：在 hash() 中用扰动函数力图将 hash 冲突降至最低 当坏情况不可避免地发生了，则尽量降低其带来的负面影响：hash 冲突产生了用槽位存储普通链表或红黑树型链表解决 特事特办：在 get 时先尝试匹配首节点，如果匹配直接返回，如果不匹配才走标准查找算法 快速失败  基本逻辑 利用数组 table 存储 Node，每个 table">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-10-16T08:20:40.033Z">
+<meta property="og:updated_time" content="2019-10-28T09:16:38.836Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="HashMap源码分析">
+<meta name="twitter:title" content="HashMap笔记">
 <meta name="twitter:description" content="前言基础知识。 正文设计理念 尽最大努力尽量避免坏情况发生：在 hash() 中用扰动函数力图将 hash 冲突降至最低 当坏情况不可避免地发生了，则尽量降低其带来的负面影响：hash 冲突产生了用槽位存储普通链表或红黑树型链表解决 特事特办：在 get 时先尝试匹配首节点，如果匹配直接返回，如果不匹配才走标准查找算法 快速失败  基本逻辑 利用数组 table 存储 Node，每个 table">
 
 
@@ -129,7 +129,7 @@
   };
 </script>
 
-  <title>HashMap源码分析 | Since1986</title>
+  <title>HashMap笔记 | Since1986</title>
   
 
 
@@ -398,7 +398,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">HashMap源码分析
+          <h1 class="post-title" itemprop="name headline">HashMap笔记
 
               
             
@@ -424,12 +424,24 @@
                 
               
 
-              <time title="创建时间：2019-10-16 16:12:03 / 修改时间：16:20:40" itemprop="dateCreated datePublished" datetime="2019-10-16T16:12:03+08:00">2019-10-16</time>
+              <time title="创建时间：2019-10-16 16:12:03" itemprop="dateCreated datePublished" datetime="2019-10-16T16:12:03+08:00">2019-10-16</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-28 17:16:38" itemprop="dateModified" datetime="2019-10-28T17:16:38+08:00">2019-10-28</time>
               
             
           </span>
@@ -569,7 +581,7 @@
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     
-    <a href="https://since1986.github.io/ca4438af.html" title="HashMap源码分析">https://since1986.github.io/ca4438af.html</a>
+    <a href="https://since1986.github.io/ca4438af.html" title="HashMap笔记">https://since1986.github.io/ca4438af.html</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
@@ -683,7 +695,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">157</span>
+                    <span class="site-state-item-count">158</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -914,7 +926,7 @@
     
       <span class="post-meta-item-text">站点总字数：</span>
     
-    <span title="站点总字数">574k</span>
+    <span title="站点总字数">582k</span>
   
 
   
@@ -925,7 +937,7 @@
     
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
     
-    <span title="站点阅读时长">8:42</span>
+    <span title="站点阅读时长">8:49</span>
   
 </div>
 

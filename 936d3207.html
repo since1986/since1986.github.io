@@ -100,14 +100,18 @@
 
 
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="tags">
-<meta property="og:url" content="https://since1986.github.io/tags/index.html">
+  <meta name="description" content="前言突然想到的。 正文 迪米特法则（Law of Demeter，LoD）又叫作最少知识原则（Least Knowledge Principle，LKP)，产生于 1987 年美国东北大学（Northeastern University）的一个名为迪米特（Demeter）的研究项目，由伊恩·荷兰（Ian Holland）提出，被 UML 创始者之一的布奇（Booch）普及，后来又因为在经典著作《程">
+<meta name="keywords" content="设计,思考">
+<meta property="og:type" content="article">
+<meta property="og:title" content="实现了hashCode()必须同时实现equals()是否违反了最少知识原则?">
+<meta property="og:url" content="https://since1986.github.io/936d3207.html">
 <meta property="og:site_name" content="Since1986">
+<meta property="og:description" content="前言突然想到的。 正文 迪米特法则（Law of Demeter，LoD）又叫作最少知识原则（Least Knowledge Principle，LKP)，产生于 1987 年美国东北大学（Northeastern University）的一个名为迪米特（Demeter）的研究项目，由伊恩·荷兰（Ian Holland）提出，被 UML 创始者之一的布奇（Booch）普及，后来又因为在经典著作《程">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-06-06T12:37:29.835Z">
+<meta property="og:updated_time" content="2019-10-28T07:18:05.243Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="tags">
+<meta name="twitter:title" content="实现了hashCode()必须同时实现equals()是否违反了最少知识原则?">
+<meta name="twitter:description" content="前言突然想到的。 正文 迪米特法则（Law of Demeter，LoD）又叫作最少知识原则（Least Knowledge Principle，LKP)，产生于 1987 年美国东北大学（Northeastern University）的一个名为迪米特（Demeter）的研究项目，由伊恩·荷兰（Ian Holland）提出，被 UML 创始者之一的布奇（Booch）普及，后来又因为在经典著作《程">
 
 
 
@@ -115,7 +119,7 @@
 
   
   
-  <link rel="canonical" href="https://since1986.github.io/tags/">
+  <link rel="canonical" href="https://since1986.github.io/936d3207">
 
 
 
@@ -125,7 +129,7 @@
   };
 </script>
 
-  <title>tags | Since1986</title>
+  <title>实现了hashCode()必须同时实现equals()是否违反了最少知识原则? | Since1986</title>
   
 
 
@@ -245,7 +249,7 @@
         
         
           
-          <li class="menu-item menu-item-tags menu-item-active">
+          <li class="menu-item menu-item-tags">
 
     
     
@@ -357,184 +361,234 @@
           
             
 
-    
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-    
-
-  
-
-
           
           <div id="content" class="content">
             
 
   <div id="posts" class="posts-expand">
     
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://since1986.github.io/936d3207.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="since1986">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar215x215.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Since1986">
+    </span>
+
     
-    
-    <div class="post-block page">
       <header class="post-header">
 
-<h1 class="post-title" itemprop="name headline">tags
-
-</h1>
-
-<div class="post-meta">
-  
-  
-
-
-
-</div>
-
-</header>
-
-      
-      
-      
-      <div class="post-body">
         
         
-          <div class="tag-cloud">
-            <div class="tag-cloud-title">
+          <h1 class="post-title" itemprop="name headline">实现了hashCode()必须同时实现equals()是否违反了最少知识原则?
+
               
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
               
-                
-                  
-                
+                <span class="post-meta-item-text">发表于</span>
               
-                
-                  
-                
-              
-                
-                  
-                
-              
-                
-                  
-                
-              
-                
-                  
-                
-              
-                
-                  
-                
+
               
                 
-                  
-                
               
-                
-                  
-                
+
+              <time title="创建时间：2019-10-28 14:59:54 / 修改时间：15:18:05" itemprop="dateCreated datePublished" datetime="2019-10-28T14:59:54+08:00">2019-10-28</time>
+            
+
+            
               
-                
-                  
-                
+
               
-                
-                  
-                
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
               
-                
-                  
-                
+
               
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
                 
-                  
+                  <span class="post-meta-item-text">本文字数：</span>
                 
+                <span title="本文字数">1.1k</span>
               
-                
-                  
-                
+
               
-                
-                  
-                
+                <span class="post-meta-divider">|</span>
               
-                
-                  
-                
+
               
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
                 
-                  
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
-              
-                
-                  
-                
-              
-                
-                  
-                
-              
-                
-                  
-                
-              
-                
-                  
-                
-              
-                
-                  
-                
-              
-                
-                  
-                
-              
-                
-                  
-                
-              
-                
-                  
-                
-              
-                
-                  
-                
-              
-              目前共计 25 个标签
-            </div>
-            <div class="tag-cloud-tags">
-              
-                <a href="/tags/Android/" style="font-size: 22.5px; color: #5f5f5f">Android</a> <a href="/tags/JDK/" style="font-size: 18px; color: #8e8e8e">JDK</a> <a href="/tags/JVM/" style="font-size: 21px; color: #6f6f6f">JVM</a> <a href="/tags/Java基础/" style="font-size: 25.5px; color: #404040">Java基础</a> <a href="/tags/Linux/" style="font-size: 24px; color: #4f4f4f">Linux</a> <a href="/tags/MySQL/" style="font-size: 13.5px; color: #bcbcbc">MySQL</a> <a href="/tags/Redis/" style="font-size: 12px; color: #ccc">Redis</a> <a href="/tags/spring/" style="font-size: 27px; color: #303030">spring</a> <a href="/tags/spring-boot/" style="font-size: 18px; color: #8e8e8e">spring-boot</a> <a href="/tags/spring-cloud/" style="font-size: 18px; color: #8e8e8e">spring-cloud</a> <a href="/tags/spring-webflux/" style="font-size: 12px; color: #ccc">spring-webflux</a> <a href="/tags/其他/" style="font-size: 13.5px; color: #bcbcbc">其他</a> <a href="/tags/前端/" style="font-size: 15px; color: #adadad">前端</a> <a href="/tags/实践/" style="font-size: 30px; color: #111">实践</a> <a href="/tags/工具/" style="font-size: 28.5px; color: #212121">工具</a> <a href="/tags/开源/" style="font-size: 12px; color: #ccc">开源</a> <a href="/tags/思考/" style="font-size: 21px; color: #6f6f6f">思考</a> <a href="/tags/源码/" style="font-size: 25.5px; color: #404040">源码</a> <a href="/tags/算法/" style="font-size: 19.5px; color: #7e7e7e">算法</a> <a href="/tags/线程/" style="font-size: 13.5px; color: #bcbcbc">线程</a> <a href="/tags/职业生涯/" style="font-size: 12px; color: #ccc">职业生涯</a> <a href="/tags/计算机原理/" style="font-size: 13.5px; color: #bcbcbc">计算机原理</a> <a href="/tags/设计/" style="font-size: 16.5px; color: #9d9d9d">设计</a> <a href="/tags/踩坑/" style="font-size: 18px; color: #8e8e8e">踩坑</a> <a href="/tags/题/" style="font-size: 12px; color: #ccc">题</a>
+                <span title="阅读时长">1 分钟</span>
               
             </div>
-          </div>
-        
-      </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
       
       
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>突然想到的。</p>
+<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><blockquote>
+<p>迪米特法则（Law of Demeter，LoD）又叫作最少知识原则（Least Knowledge Principle，LKP)，产生于 1987 年美国东北大学（Northeastern University）的一个名为迪米特（Demeter）的研究项目，由伊恩·荷兰（Ian Holland）提出，被 UML 创始者之一的布奇（Booch）普及，后来又因为在经典著作《程序员修炼之道》（The Pragmatic Programmer）提及而广为人知。</p>
+<p>迪米特法则的定义是：只与你的直接朋友(迪米特法则中的“朋友”是指：当前对象本身、当前对象的成员对象、当前对象所创建的对象、当前对象的方法参数等，这些对象同当前对象存在关联、聚合或组合关系，可以直接访问这些对象的方法)交谈，不跟“陌生人”说话（Talk only to your immediate friends and not to strangers）。其含义是：如果两个软件实体无须直接通信，那么就不应当发生直接的相互调用，可以通过第三方转发该调用。其目的是降低类之间的耦合度，提高模块的相对独立性。</p>
+<p>在运用迪米特法则时要注意以下 6 点:<br>在类的划分上，应该创建弱耦合的类。类与类之间的耦合越弱，就越有利于实现可复用的目标。<br>在类的结构设计上，尽量降低类成员的访问权限。<br>在类的设计上，优先考虑将一个类设置成不变类。<br>在对其他类的引用上，将引用其他对象的次数降到最低。<br>不暴露类的属性成员，而应该提供相应的访问器（set 和 get 方法）。<br>谨慎使用序列化（Serializable）功能。</p>
+</blockquote>
+<p>以上是<code>最少知识原则</code>的大概解释，知道了什么是<code>最少知识原则</code>，我们来思考：“实现了hashCode()必须同时实现equals()”，这个规定是不是违反了<code>最少知识原则</code>？ 之所以要有这样的规定，是因为假如当前类的实例要作为 key 入 HashMap 时，如果当前有 hash 冲突产生，则需要用 equals 来区分两个 key 的不同。</p>
+<p>仔细想一想，这样岂不是把上层逻辑（我们自己的类）绑定在了底层逻辑的实现（HashMap 的 hash 冲突处理逻辑）上了，也就是我实现一个上层的逻辑还要考虑怎么去兼容底层的逻辑，这个明显是违背了<code>最少知识原则</code>的。理响的状态是我设计一个上层类时是应该不关心底层逻辑才对。个人觉得应该把“实现了hashCode()必须同时实现equals()”这个行为隐藏在一个门面底下，也就是说只要实现了 hashCode() 就必然隐式的同时实现了 equals() (可以用<code>语法糖</code>等方式实现)，这样才更符合设计原则。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="http://c.biancheng.net/view/1331.html" target="_blank" rel="noopener">迪米特法则——面向对象设计原则</a></p>
+
       
     </div>
+
     
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+      <div>
+        
 
 
 
+
+  
+
+
+
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>since1986</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
     
+    <a href="https://since1986.github.io/936d3207.html" title="实现了hashCode()必须同时实现equals()是否违反了最少知识原则?">https://since1986.github.io/936d3207.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
     
-    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/设计/" rel="tag"># 设计</a>
+          
+            <a href="/tags/思考/" rel="tag"># 思考</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/63dc2b99.html" rel="next" title="AbstractQueuedSynchronizer笔记">
+                <i class="fa fa-chevron-left"></i> AbstractQueuedSynchronizer笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
   </div>
 
 
@@ -563,8 +617,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <div class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -759,6 +822,23 @@
         </div>
       </div>
 
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
       
 
       
