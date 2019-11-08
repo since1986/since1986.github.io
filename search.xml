@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Spring中@DependsOn的原理]]></title>
+    <url>%2F39de5df8.html</url>
+    <content type="text"><![CDATA[前言在工程中用到了@DependsOn这个注解，大致了解了一下其实现原理。 正文Spring 中，如果想要实现 “BeanA 要在 BeanB 和 BeanC 构造完成后才构造” 这样的场景的话，需要在 BeanA 中加入@DependsOn({&quot;beanB&quot;, &quot;beanC&quot;})，这样的注解，这样Spring就能确保”beanB”, “beanC”先构造完成。 那么，Spring是怎么实现得呢？十分简单，简言之就是当在构造”beanA”的过程中发现其标注有@DependsOn的话，就会先调用一遍其中指定的beans的构造流程。代码也比较简单： 123456789101112131415161718192021222324252627protected &lt;T&gt; T doGetBean(final String name, @Nullable final Class&lt;T&gt; requiredType, @Nullable final Object[] args, boolean typeCheckOnly) throws BeansException &#123; ... // Guarantee initialization of beans that the current bean depends on. String[] dependsOn = mbd.getDependsOn(); if (dependsOn != null) &#123; for (String dep : dependsOn) &#123; // 循环所有 dependsOn 的 bean名 if (isDependent(beanName, dep)) &#123; // 校验一下是否存在循环所 dependsOn，循环dependsOn是不允许的 throw new BeanCreationException(mbd.getResourceDescription(), beanName, "Circular depends-on relationship between '" + beanName + "' and '" + dep + "'"); &#125; registerDependentBean(dep, beanName); // 注册dependsOn关系，用于上边校验循环dependsOn用 try &#123; getBean(dep); // 让被依赖的bean先走构造流程 &#125; catch (NoSuchBeanDefinitionException ex) &#123; // 用被依赖的bean名无法构造bean需要抛出异常 throw new BeanCreationException(mbd.getResourceDescription(), beanName, "'" + beanName + "' depends on missing bean '" + dep + "'", ex); &#125; &#125; &#125; ... &#125;]]></content>
+      <tags>
+        <tag>源码</tag>
+        <tag>spring</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[实现了hashCode()必须同时实现equals()是否违反了最少知识原则?]]></title>
     <url>%2F936d3207.html</url>
     <content type="text"><![CDATA[前言突然想到的。 正文 迪米特法则（Law of Demeter，LoD）又叫作最少知识原则（Least Knowledge Principle，LKP)，产生于 1987 年美国东北大学（Northeastern University）的一个名为迪米特（Demeter）的研究项目，由伊恩·荷兰（Ian Holland）提出，被 UML 创始者之一的布奇（Booch）普及，后来又因为在经典著作《程序员修炼之道》（The Pragmatic Programmer）提及而广为人知。 迪米特法则的定义是：只与你的直接朋友(迪米特法则中的“朋友”是指：当前对象本身、当前对象的成员对象、当前对象所创建的对象、当前对象的方法参数等，这些对象同当前对象存在关联、聚合或组合关系，可以直接访问这些对象的方法)交谈，不跟“陌生人”说话（Talk only to your immediate friends and not to strangers）。其含义是：如果两个软件实体无须直接通信，那么就不应当发生直接的相互调用，可以通过第三方转发该调用。其目的是降低类之间的耦合度，提高模块的相对独立性。 在运用迪米特法则时要注意以下 6 点:在类的划分上，应该创建弱耦合的类。类与类之间的耦合越弱，就越有利于实现可复用的目标。在类的结构设计上，尽量降低类成员的访问权限。在类的设计上，优先考虑将一个类设置成不变类。在对其他类的引用上，将引用其他对象的次数降到最低。不暴露类的属性成员，而应该提供相应的访问器（set 和 get 方法）。谨慎使用序列化（Serializable）功能。 以上是最少知识原则的大概解释，知道了什么是最少知识原则，我们来思考：“实现了hashCode()必须同时实现equals()”，这个规定是不是违反了最少知识原则？ 之所以要有这样的规定，是因为假如当前类的实例要作为 key 入 HashMap 时，如果当前有 hash 冲突产生，则需要用 equals 来区分两个 key 的不同。 仔细想一想，这样岂不是把上层逻辑（我们自己的类）绑定在了底层逻辑的实现（HashMap 的 hash 冲突处理逻辑）上了，也就是我实现一个上层的逻辑还要考虑怎么去兼容底层的逻辑，这个明显是违背了最少知识原则的。理响的状态是我设计一个上层类时是应该不关心底层逻辑才对。个人觉得应该把“实现了hashCode()必须同时实现equals()”这个行为隐藏在一个门面底下，也就是说只要实现了 hashCode() 就必然隐式的同时实现了 equals() (可以用语法糖等方式实现)，这样才更符合设计原则。 参考资料迪米特法则——面向对象设计原则]]></content>
