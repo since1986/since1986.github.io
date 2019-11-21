@@ -100,13 +100,20 @@
 
 
 
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Since1986">
-<meta property="og:url" content="https://since1986.github.io/tags/设计/index.html">
+  <meta name="description" content="前言HandlerAdapter 是一种 SPI 实现方式，这种 SPI 实现方式在 spring 中有很多处应用。 正文在某一 Controller 方法上加断点，走到断点处，在调试视图中通过调用栈视图可看到 spring-mvc 的入口点为 FrameworkServlet 的 doService，我们可在此加断点，从新来一遍进行分析   整体概念 DispatcherServlet 做请求分">
+<meta name="keywords" content="源码,spring">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring-mvc请求处理过程源码分析笔记">
+<meta property="og:url" content="https://since1986.github.io/6b961dc1.html">
 <meta property="og:site_name" content="Since1986">
+<meta property="og:description" content="前言HandlerAdapter 是一种 SPI 实现方式，这种 SPI 实现方式在 spring 中有很多处应用。 正文在某一 Controller 方法上加断点，走到断点处，在调试视图中通过调用栈视图可看到 spring-mvc 的入口点为 FrameworkServlet 的 doService，我们可在此加断点，从新来一遍进行分析   整体概念 DispatcherServlet 做请求分">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://since1986.github.io/undefined/28-1.png">
+<meta property="og:updated_time" content="2019-11-21T11:12:47.874Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Since1986">
+<meta name="twitter:title" content="spring-mvc请求处理过程源码分析笔记">
+<meta name="twitter:description" content="前言HandlerAdapter 是一种 SPI 实现方式，这种 SPI 实现方式在 spring 中有很多处应用。 正文在某一 Controller 方法上加断点，走到断点处，在调试视图中通过调用栈视图可看到 spring-mvc 的入口点为 FrameworkServlet 的 doService，我们可在此加断点，从新来一遍进行分析   整体概念 DispatcherServlet 做请求分">
+<meta name="twitter:image" content="https://since1986.github.io/undefined/28-1.png">
 
 
 
@@ -114,7 +121,7 @@
 
   
   
-  <link rel="canonical" href="https://since1986.github.io/tags/设计/">
+  <link rel="canonical" href="https://since1986.github.io/6b961dc1">
 
 
 
@@ -124,7 +131,7 @@
   };
 </script>
 
-  <title>标签: 设计 | Since1986</title>
+  <title>spring-mvc请求处理过程源码分析笔记 | Since1986</title>
   
 
 
@@ -172,7 +179,7 @@
     
   
 
-  <div class="container sidebar-position-right ">
+  <div class="container sidebar-position-right page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -244,7 +251,7 @@
         
         
           
-          <li class="menu-item menu-item-tags menu-item-active">
+          <li class="menu-item menu-item-tags">
 
     
     
@@ -356,161 +363,298 @@
           
             
 
-    
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-      
-      
-    
-    
-
-  
-
-
           
           <div id="content" class="content">
             
 
+  <div id="posts" class="posts-expand">
+    
+
+  
+
   
   
   
-  <div class="post-block tag">
 
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h1>设计<small>标签</small>
-        </h1>
-      </div>
-
-      
-        
+  
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://since1986.github.io/6b961dc1.html">
 
-      <h2 class="post-title">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="since1986">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar215x215.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Since1986">
+    </span>
+
+    
+      <header class="post-header">
+
         
-          <a class="post-title-link" href="/936d3207.html" itemprop="url">
-            
-              <span itemprop="name">实现了hashCode()必须同时实现equals()是否违反了最少知识原则?</span>
-            
-          </a>
         
-      </h2>
+          <h1 class="post-title" itemprop="name headline">spring-mvc请求处理过程源码分析笔记
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-10-28T14:59:54+08:00" content="2019-10-28">
-          10-28
-        </time>
-      </div>
+              
+            
+          </h1>
+        
 
-    </header>
-  </article>
+        <div class="post-meta">
+          <span class="post-time">
 
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-21 19:09:26 / 修改时间：19:12:47" itemprop="dateCreated datePublished" datetime="2019-11-21T19:09:26+08:00">2019-11-21</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">2.7k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">2 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/97c5c9a9.html" itemprop="url">
-            
-              <span itemprop="name">使用责任链和SPI构建弹性的业务架构</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-10-17T18:54:33+08:00" content="2019-10-17">
-          10-17
-        </time>
-      </div>
-
-    </header>
-  </article>
-
+      
 
       
-        
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>HandlerAdapter 是一种 SPI 实现方式，这种 SPI 实现方式在 spring 中有很多处应用。</p>
+<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>在某一 Controller 方法上加断点，走到断点处，在调试视图中通过调用栈视图可看到 spring-mvc 的入口点为 FrameworkServlet 的 doService，我们可在此加断点，从新来一遍进行分析</p>
+<img src="/undefined/28-1.png">
 
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/a9b7a8df.html" itemprop="url">
-            
-              <span itemprop="name">spring实现根据controller中接收请求参数不同走不同service</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2018-11-12T19:11:03+08:00" content="2018-11-12">
-          11-12
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-      
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-          <a class="post-title-link" href="/a6253051.html" itemprop="url">
-            
-              <span itemprop="name">通过分析原型做系统设计</span>
-            
-          </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2018-05-21T20:12:34+08:00" content="2018-05-21">
-          05-21
-        </time>
-      </div>
-
-    </header>
-  </article>
-
+<p><em>整体概念</em></p>
+<p>DispatcherServlet 做请求分发</p>
+<p>分发是根据 HandlerMapping 获得 Handler 然后封装成 HandlerExecutionChain </p>
+<p>HandlerExecutionChain中包含两部分，一部分是标识执行主体的HandlerMethod，另一部分是其拦截器集合，拦截器分别在其执行handle前、后执行。</p>
+<p>HandlerMethod 会再封装为 HandlerAdapter 在其中用反射调用真正的 Controller中的方法逻辑</p>
+<p><em>大流程</em></p>
+<ul>
+<li><p>入口 FrameworkServlet 模板方法 doService</p>
+</li>
+<li><p>DispatcherServlet 实现 doService</p>
+</li>
+</ul>
+<p>org.springframework.web.servlet.DispatcherServlet#doService</p>
+<ul>
+<li>doDispatch 做请求分发</li>
+</ul>
+<p>org.springframework.web.servlet.DispatcherServlet#doDispatch</p>
+<ul>
+<li>getHandler 获得 HandlerExecutionChain，HandlerExecutionChain是Handler（也就是Controller）和一组HandlerInterceptor的聚合 org.springframework.web.servlet.DispatcherServlet#getHandler 其内部处理流程：<ul>
+<li>循环 this.handlerMappings 调用每一个 mapping 的 getHandler ：org.springframework.web.servlet.HandlerMapping#getHandler 其内部处理流程：<ul>
+<li>org.springframework.web.servlet.handler.AbstractHandlerMapping#getHandlerInternal 获得HandlerMethod（实际上也就是我们写的Controller中各种标记了@RequestMapping的方法包装后的结果）</li>
+<li>如果上一步获得的是null那么就获得默认的handler org.springframework.web.servlet.handler.AbstractHandlerMapping#getDefaultHandler</li>
+<li>如果上一步默认handler也为null那么直接返回null退出方法</li>
+<li>如果 handler instanceof String 那么证明handler是需要通过Bean名字从ApplicationContext里拿，如果是那么就去拿出来</li>
+<li>org.springframework.web.servlet.handler.AbstractHandlerMapping#getHandlerExecutionChain 获得 HandlerExecutionChain 并返回，其内部处理流程：<ul>
+<li>如果handler不是HandlerExecutionChain类型的，那么将handler套入new HandlerExecutionChain（） 创建成 HandlerExecutionChain</li>
+<li>获得Handler的lookupPath，也就是我们自己写的Controller的RequestMapping中的URI</li>
+<li>循环所有MappedInterceptor看起是否match到lookupPath，如果match到则此拦截器放到第一步生成的HandlerExecutionChain中然后返回</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>遇到第一个不为null的HandlerExecutionChain 立刻（跳出循环）返回</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>将上一步产生的HandlerExecutionChain中的HandlerMethod拿出来当作参数传入getHandlerAdapter获得HandlerAdapter ，HandlerAdapter 是一个SPI，用于外部扩展干预spring-mvc内部流程用的，其内部流程：</p>
+<ul>
+<li>循环handlerAdapters找到第一个supports的就返回</li>
+</ul>
+</li>
+<li><p>Process last-modified header 处理 last-modified</p>
+</li>
+<li><p>org.springframework.web.servlet.HandlerExecutionChain#applyPreHandle 进行handle前处理</p>
+</li>
+<li><p>org.springframework.web.servlet.HandlerAdapter#handle 进行真正的Handler的handle（也就是 Controller 中对应的我们自己实现的逻辑）并返回 ModelAndView 其内部处理流程：</p>
+<ul>
+<li>调用 checkRequest 校验是否支持当前请求方法类别</li>
+<li>将HandlerMethod 封装为 InvocableHandlerMethod 并执行其 invokeAndHandle，在其内部流程中最终会通过反射（ java.lang.reflect.Method#invoke）执行HandlerMethod中对应的我们自己定义的Controller中的方法</li>
+<li>调用 getModelAndView 完成并返回</li>
+</ul>
+</li>
+<li><p>org.springframework.web.servlet.DispatcherServlet#applyDefaultViewName 为上一步返回的 ModelAndView 应用DefaultViewName 其内部流程：</p>
+</li>
+<li><p>org.springframework.web.servlet.HandlerExecutionChain#applyPostHandle 进行handle后处理</p>
+</li>
+<li><p>org.springframework.web.servlet.DispatcherServlet#processDispatchResult 完成处理</p>
+</li>
+</ul>
 
       
     </div>
 
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+      <div>
+        
+
+
+
+
+  
+
+
+
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>since1986</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    
+    <a href="https://since1986.github.io/6b961dc1.html" title="spring-mvc请求处理过程源码分析笔记">https://since1986.github.io/6b961dc1.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        
+          
+        
+        <div class="post-tags">
+          
+            <a href="/tags/源码/" rel="tag"># 源码</a>
+          
+            <a href="/tags/spring/" rel="tag"># spring</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/f0523b55.html" rel="next" title="Spring构造器注入源码分析笔记">
+                <i class="fa fa-chevron-left"></i> Spring构造器注入源码分析笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
+  </article>
 
-  
 
+  </div>
 
 
           </div>
           
+
+  
+
+
 
         </div>
         
@@ -530,8 +674,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <div class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -727,6 +880,23 @@
       </div>
 
       
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
 
       
         <div class="back-to-top">
@@ -881,6 +1051,10 @@
 
 
   
+  <script src="/js/scrollspy.js?v=7.1.2"></script>
+<script src="/js/post-details.js?v=7.1.2"></script>
+
+
 
   
 
@@ -899,6 +1073,8 @@
 
   
 
+
+  
 
 
   
